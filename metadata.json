@@ -1,0 +1,8 @@
+{
+  "name": "Remix 대구 진로학업설계 지원 플랫폼",
+  "description": "질문이 진로가 되는 대구 진로교육 - 고교학점제 2022 개정 교육과정 기반 진로·학업 설계, 커리어넷 연계 학과·직업 탐색, 3개년 과목 이수 시뮬레이터 및 AI 맞춤 진로 컨설턴트",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
