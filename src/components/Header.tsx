@@ -30,12 +30,15 @@ export const Header: React.FC<HeaderProps> = ({
   const handleSearch = onSearch || onQuickSearch || (() => {});
 
   const navItems = [
-    { id: 'guide', label: '고교학점제 가이드', icon: BookOpen, tag: '안내' },
-    { id: 'subjects', label: '2022 교과목 탐색', icon: Compass, tag: '과목' },
-    { id: 'majors', label: '학과·직업 탐색', icon: GraduationCap, tag: '진로' },
-    { id: 'planner', label: '3개년 학업계획서', icon: Calendar, tag: '192학점' },
-    { id: 'ai_consultant', label: 'AI 진로 도우미', icon: Sparkles, tag: 'AI상담' },
-    { id: 'diagnosis', label: '진로적성 간이진단', icon: HelpCircle, tag: '진단' },
+    { id: 'home', label: '메인 홈', icon: Compass, tag: '종합' },
+    { id: 'majors', label: '학과 정보', icon: GraduationCap, tag: '전공' },
+    { id: 'subjects', label: '과목 정보', icon: BookOpen, tag: '교과' },
+    { id: 'jobs', label: '직업 정보', icon: Compass, tag: '진로' },
+    { id: 'recommendations', label: '권장이수과목', icon: CheckCircle2, tag: '대입' },
+    { id: 'planner', label: '학업설계(시뮬레이터)', icon: Calendar, tag: '192학점' },
+    { id: 'ai_consultant', label: 'AI 진로 멘토', icon: Sparkles, tag: 'AI상담' },
+    { id: 'diagnosis', label: '커리어넷 진로검사', icon: HelpCircle, tag: '심리검사' },
+    { id: 'guide', label: '고교학점제 안내', icon: BookOpen, tag: '가이드' },
   ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -49,8 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const isCurrentTab = (tabId: string) => {
+    if (tabId === 'home') return activeTab === 'home' || !activeTab;
     if (tabId === 'guide') return activeTab === 'guide' || activeTab === 'guidance';
-    if (tabId === 'majors') return activeTab === 'majors' || activeTab === 'majors_jobs';
     return activeTab === tabId;
   };
 
@@ -88,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Logo */}
           <div
             className="flex items-center space-x-3 cursor-pointer group select-none"
-            onClick={() => setActiveTab('guide')}
+            onClick={() => setActiveTab('home')}
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-md shadow-indigo-950/50 group-hover:scale-105 transition-transform duration-200">
               <Compass className="w-5 h-5 text-white" />

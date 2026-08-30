@@ -1,14 +1,10 @@
 import express, { Request, Response } from "express";
-import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
-import { createServer as createViteServer } from "vite";
 
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
-
 app.use(express.json());
 
 // Initialize Gemini Client
@@ -27,7 +23,6 @@ function getGeminiClient(): GoogleGenAI {
   return geminiClient;
 }
 
-// System instruction for Daegu Career & Academic Counseling
 const CAREER_SYSTEM_INSTRUCTION = `당신은 '대구 진로학업설계 지원 플랫폼 (질문이 진로가 되는 대구 진로교육)'의 최고 전문 AI 진로·학업설계 수석 컨설턴트입니다.
 2022 개정 교육과정, 고교학점제(3개년 총 192학점: 교과 174학점 + 창의적체험활동 18학점), 대입 전형 연계 및 대학별 핵심/권장 이수과목, 전공자율선택제(무전공), 학교 밖 교육과정에 대해 완벽한 전문성을 가지고 상담을 제공합니다.
 
@@ -54,10 +49,8 @@ app.post("/api/gemini/career-consult", async (req: Request, res: Response) => {
     }
 
     const fullPrompt = `${contextInfo}\n[학생의 질문]\n${prompt}`;
-
     const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
 
-    // Add conversation history if available
     if (Array.isArray(history) && history.length > 0) {
       history.forEach((h: { role: string; text: string }) => {
         contents.push({
@@ -92,7 +85,7 @@ app.post("/api/gemini/career-consult", async (req: Request, res: Response) => {
   }
 });
 
-// 2. CareerNet Open API Proxy (Bypasses browser CORS & secures requests)
+// 2. CareerNet Open API Proxy
 app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
   try {
     const keyToUse = (req.query.apiKey as string) || process.env.CAREERNET_API_KEY || "";
@@ -106,7 +99,6 @@ app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
     params.append("apiKey", keyToUse);
     params.append("contentType", (req.query.contentType as string) || "json");
 
-    // Dynamically forward all other query parameters
     for (const [key, value] of Object.entries(req.query)) {
       if (key !== "apiKey" && key !== "contentType" && value !== undefined && value !== null) {
         params.append(key, String(value));
@@ -114,7 +106,6 @@ app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
     }
 
     const targetUrl = `https://www.career.go.kr/cnet/openapi/getOpenApi?${params.toString()}`;
-
     const response = await fetch(targetUrl);
     if (!response.ok) {
       throw new Error(`CareerNet API HTTP Error: ${response.status}`);
@@ -131,7 +122,7 @@ app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
   }
 });
 
-// 3. Work24 (고용24) Open API Proxy
+// 3. Work24 Open API Proxy
 app.get("/api/work24/proxy", async (req: Request, res: Response) => {
   try {
     const keyToUse = (req.query.authKey as string) || process.env.WORK24_API_KEY || "";
@@ -170,30 +161,9 @@ app.get("/api/work24/proxy", async (req: Request, res: Response) => {
   }
 });
 
-// Health check endpoint
+// Health check
 app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok", app: "daegu-career-academic-design", timestamp: new Date().toISOString() });
 });
 
-async function startServer() {
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Daegu Career Platform] Server running on http://localhost:${PORT}`);
-  });
-}
-
-startServer();
+export default app;

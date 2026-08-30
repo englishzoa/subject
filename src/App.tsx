@@ -5,36 +5,46 @@
 
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
+import { HomeDashboard } from './components/HomeDashboard';
 import { GuidanceView } from './components/GuidanceView';
 import { SubjectExplorer } from './components/SubjectExplorer';
-import { MajorJobExplorer } from './components/MajorJobExplorer';
+import { MajorExplorer } from './components/MajorExplorer';
+import { JobExplorer } from './components/JobExplorer';
+import { RecommendedSubjectsView } from './components/RecommendedSubjectsView';
 import { AcademicPlanner } from './components/AcademicPlanner';
 import { AiConsultant } from './components/AiConsultant';
-import { CareerDiagnosis } from './components/CareerDiagnosis';
-import { CareerNetApiConfig } from './components/CareerNetApiConfig';
-import { GraduationCap, Sparkles, BookOpen, Compass, ExternalLink, ShieldCheck } from 'lucide-react';
+import { CareerNetTest } from './components/CareerNetTest';
+import { ApiSettingsModal } from './components/ApiSettingsModal';
+import { GraduationCap, Sparkles, BookOpen, Compass, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<string>('guide');
+  const [activeTab, setActiveTab] = useState<string>('home');
   const [subjectSearchQuery, setSubjectSearchQuery] = useState<string>('');
   const [plannerInitialMajor, setPlannerInitialMajor] = useState<string>('');
   const [plannerInitialCategory, setPlannerInitialCategory] = useState<string>('');
   const [aiStudentContext, setAiStudentContext] = useState<any>(null);
 
-  // CareerNet Open API key management
+  // CareerNet & Work24 Open API key management
   const [careernetKey, setCareernetKey] = useState<string>(() => {
     return localStorage.getItem('careernet_api_key') || '';
   });
+  const [work24Key, setWork24Key] = useState<string>(() => {
+    return localStorage.getItem('work24_api_key') || '';
+  });
   const [isApiModalOpen, setIsApiModalOpen] = useState<boolean>(false);
 
-  const handleSaveCareernetKey = (key: string) => {
-    localStorage.setItem('careernet_api_key', key);
-    setCareernetKey(key);
+  const handleSaveKeys = (cKey: string, wKey: string) => {
+    localStorage.setItem('careernet_api_key', cKey);
+    localStorage.setItem('work24_api_key', wKey);
+    setCareernetKey(cKey);
+    setWork24Key(wKey);
   };
 
-  const handleResetCareernetKey = () => {
+  const handleResetKeys = () => {
     localStorage.removeItem('careernet_api_key');
+    localStorage.removeItem('work24_api_key');
     setCareernetKey('');
+    setWork24Key('');
   };
 
   // Header quick search router
@@ -47,6 +57,10 @@ export default function App() {
   const handleSelectMajorForPlan = (majorName: string, category: string) => {
     setPlannerInitialMajor(majorName);
     setPlannerInitialCategory(category);
+    setActiveTab('planner');
+  };
+
+  const handleSelectJobForPlan = (jobName: string) => {
     setActiveTab('planner');
   };
 
@@ -73,8 +87,31 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'guide' && (
-          <GuidanceView onNavigate={(tab) => setActiveTab(tab)} />
+        {(activeTab === 'home' || !activeTab) && (
+          <HomeDashboard
+            onNavigate={(tabId) => setActiveTab(tabId)}
+            onSearchSubject={(subName) => {
+              setSubjectSearchQuery(subName);
+              setActiveTab('subjects');
+            }}
+            onSelectMajorForPlan={handleSelectMajorForPlan}
+          />
+        )}
+
+        {activeTab === 'majors' && (
+          <MajorExplorer
+            careernetKey={careernetKey}
+            work24Key={work24Key}
+            onOpenApiModal={() => setIsApiModalOpen(true)}
+            onSelectMajorForPlan={handleSelectMajorForPlan}
+            onNavigateToSubject={(subName) => {
+              setSubjectSearchQuery(subName);
+              setActiveTab('subjects');
+            }}
+            onNavigateToJob={(jobName) => {
+              setActiveTab('jobs');
+            }}
+          />
         )}
 
         {activeTab === 'subjects' && (
@@ -89,16 +126,32 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'majors' && (
-          <MajorJobExplorer
-            apiKey={careernetKey}
-            isKeySaved={!!careernetKey}
+        {activeTab === 'jobs' && (
+          <JobExplorer
+            careernetKey={careernetKey}
+            work24Key={work24Key}
             onOpenApiModal={() => setIsApiModalOpen(true)}
-            onSelectMajorForPlan={handleSelectMajorForPlan}
+            onNavigateToMajor={(majorName) => {
+              setActiveTab('majors');
+            }}
             onNavigateToSubject={(subName) => {
               setSubjectSearchQuery(subName);
               setActiveTab('subjects');
             }}
+            onSelectJobForPlan={handleSelectJobForPlan}
+          />
+        )}
+
+        {activeTab === 'recommendations' && (
+          <RecommendedSubjectsView
+            onNavigateToSubject={(subName) => {
+              setSubjectSearchQuery(subName);
+              setActiveTab('subjects');
+            }}
+            onNavigateToMajor={(majorName) => {
+              setActiveTab('majors');
+            }}
+            onNavigateToPlanner={() => setActiveTab('planner')}
           />
         )}
 
@@ -110,27 +163,40 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'diagnosis' && (
-          <CareerDiagnosis
-            onApplyDiagnosisToPlanner={handleApplyDiagnosisToPlanner}
-          />
-        )}
-
         {activeTab === 'ai_consultant' && (
           <AiConsultant
             initialStudentContext={aiStudentContext}
           />
         )}
+
+        {activeTab === 'diagnosis' && (
+          <CareerNetTest
+            careernetKey={careernetKey}
+            onOpenApiModal={() => setIsApiModalOpen(true)}
+            onApplyDiagnosisToPlanner={handleApplyDiagnosisToPlanner}
+            onNavigateToMajor={(majorName) => {
+              setActiveTab('majors');
+            }}
+            onNavigateToSubject={(subName) => {
+              setSubjectSearchQuery(subName);
+              setActiveTab('subjects');
+            }}
+          />
+        )}
+
+        {activeTab === 'guide' && (
+          <GuidanceView onNavigate={(tab) => setActiveTab(tab)} />
+        )}
       </main>
 
-      {/* CareerNet API Settings Modal */}
-      <CareerNetApiConfig
+      {/* API Settings Modal */}
+      <ApiSettingsModal
         isOpen={isApiModalOpen}
         onClose={() => setIsApiModalOpen(false)}
-        apiKey={careernetKey}
-        isKeySaved={!!careernetKey}
-        onSaveKey={handleSaveCareernetKey}
-        onResetKey={handleResetCareernetKey}
+        careernetKey={careernetKey}
+        work24Key={work24Key}
+        onSaveKeys={handleSaveKeys}
+        onResetKeys={handleResetKeys}
       />
 
       {/* Platform Footer */}
@@ -167,6 +233,14 @@ export default function App() {
                 className="hover:text-indigo-600 transition flex items-center"
               >
                 커리어넷 (CareerNet) <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+              <a
+                href="https://www.work24.go.kr"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-indigo-600 transition flex items-center"
+              >
+                고용24 (워크넷) <ExternalLink className="w-3 h-3 ml-1" />
               </a>
               <a
                 href="https://www.edunet.net"

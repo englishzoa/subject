@@ -17,16 +17,38 @@ export interface Subject {
   studyTips: string;
 }
 
+export type DepartmentCategory = 
+  | '인문학 계열'
+  | '사회 계열'
+  | '경상 계열'
+  | '사범 계열'
+  | '자연과학 계열'
+  | '공학 계열'
+  | '농생명과학 계열'
+  | '예체능 계열'
+  | '융합미래분야 계열'
+  | '의료보건 계열'
+  | '자율전공·첨단 계열';
+
+export interface HighSchoolSubjectRecommendation {
+  general: string[];   // 일반선택
+  career: string[];    // 진로선택
+  convergence: string[]; // 융합선택
+}
+
 export interface Department {
   id: string;
   name: string;
-  category: '공학계열' | '자연계열' | '의약계열' | '인문사회계열' | '사회과학계열' | '경영·경제계열' | '교육계열' | '예체능계열';
+  category: DepartmentCategory;
   summary: string;
   desc: string;
   mainCurriculum: string[];
   coreRecommendedSubjects: string[]; // 핵심 권장과목 (미이수 시 불이익 가능)
   recommendedSubjects: string[]; // 권장과목
-  relatedJobs: string[]; // 관련 직업 ID 또는 명칭
+  highSchoolSubjects?: HighSchoolSubjectRecommendation; // 고교 추천 선택과목 체계
+  similarDepartments?: string[]; // 유사 학과
+  certifications?: string[]; // 관련 자격 및 시험
+  relatedJobs: string[]; // 관련 직업 명칭
   relatedSubjectIds: string[]; // 교과목 ID 목록
   topUniversities?: string[];
   careerProspects: string;
