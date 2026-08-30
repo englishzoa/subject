@@ -95,10 +95,10 @@ app.post("/api/gemini/career-consult", async (req: Request, res: Response) => {
 // 2. CareerNet Open API Proxy (Bypasses browser CORS & secures requests)
 app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
   try {
-    const keyToUse = (req.query.apiKey as string) || process.env.CAREERNET_API_KEY || "";
+    const keyToUse = (req.query.apiKey as string) || process.env.CAREERNET_API_KEY || "d0c8fa62e84d43709b1f518e38d77a83";
     if (!keyToUse) {
       return res.status(400).json({
-        error: "커리어넷 Open API 키가 필요합니다. 상단 커리어넷 API 설정에서 키를 등록해주세요.",
+        error: "커리어넷 Open API 키가 필요합니다.",
       });
     }
 
@@ -134,15 +134,21 @@ app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
 // 3. Work24 (고용24) Open API Proxy
 app.get("/api/work24/proxy", async (req: Request, res: Response) => {
   try {
-    const keyToUse = (req.query.authKey as string) || process.env.WORK24_API_KEY || "";
+    const defaultJobKey = "6e4fa144-d61e-45b5-9230-e558b8a02d65";
+    const defaultMajorKey = "6b8960ad-4aa4-4754-8971-dc93c509ddbd";
+    const targetApi = (req.query.apiType as string) || "jobDicApi.do";
+    
+    // Choose appropriate default key based on target API if not specified
+    let keyToUse = (req.query.authKey as string) || "";
     if (!keyToUse) {
-      return res.status(400).json({
-        error: "고용24(워크넷) Open API 키가 필요합니다.",
-      });
+      if (targetApi.includes("major") || (req.query.target as string)?.includes("MJR")) {
+        keyToUse = process.env.WORK24_MAJOR_KEY || defaultMajorKey;
+      } else {
+        keyToUse = process.env.WORK24_JOB_KEY || defaultJobKey;
+      }
     }
 
-    const targetApi = (req.query.apiType as string) || "jobDicApi.do";
-    const baseUrl = `https://openapi.work.go.kr/opi/opi/opia/${targetApi}`;
+    const baseUrl = `http://openapi.work.go.kr/opi/opi/opia/${targetApi}`;
 
     const params = new URLSearchParams();
     params.append("authKey", keyToUse);
@@ -154,7 +160,12 @@ app.get("/api/work24/proxy", async (req: Request, res: Response) => {
       }
     }
 
-    const response = await fetch(`${baseUrl}?${params.toString()}`);
+    const response = await fetch(`${baseUrl}?${params.toString()}`, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+    });
+
     if (!response.ok) {
       throw new Error(`Work24 API HTTP Error: ${response.status}`);
     }
@@ -166,6 +177,7 @@ app.get("/api/work24/proxy", async (req: Request, res: Response) => {
     console.error("Work24 Proxy Error:", error);
     res.status(500).json({
       error: "고용24 API 호출 중 오류가 발생했습니다.",
+      details: error.message || String(error),
     });
   }
 });

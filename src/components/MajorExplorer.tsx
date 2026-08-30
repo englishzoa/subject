@@ -8,18 +8,17 @@ import {
 } from 'lucide-react';
 
 interface MajorExplorerProps {
-  careernetKey: string;
-  work24Key: string;
-  onOpenApiModal: () => void;
+  careernetKey?: string;
+  work24Key?: string;
+  onOpenApiModal?: () => void;
   onSelectMajorForPlan?: (majorName: string, category: string) => void;
   onNavigateToSubject?: (subjectName: string) => void;
   onNavigateToJob?: (jobIdOrName: string) => void;
 }
 
 export const MajorExplorer: React.FC<MajorExplorerProps> = ({
-  careernetKey,
-  work24Key,
-  onOpenApiModal,
+  careernetKey = '',
+  work24Key = '',
   onSelectMajorForPlan,
   onNavigateToSubject,
   onNavigateToJob
@@ -40,26 +39,26 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
 
   // Pagination for Local Departments
   const [localDisplayCount, setLocalDisplayCount] = useState<number>(12);
+  const [showAllLocal, setShowAllLocal] = useState<boolean>(false);
 
+  // Exact categories derived from DEPARTMENTS_DATA with accurate item counts
   const deptCategories = [
-    { id: 'all', label: '전체 계열' },
-    { id: '공학계열', label: '공학계열' },
-    { id: '자연계열', label: '자연계열' },
-    { id: '의약계열', label: '의약계열' },
-    { id: '경영·경제계열', label: '경영·경제' },
-    { id: '사회과학계열', label: '사회과학' },
-    { id: '인문사회계열', label: '인문사회' },
-    { id: '교육계열', label: '교육계열' },
-    { id: '예체능계열', label: '예체능계열' },
+    { id: 'all', label: '전체 계열', count: DEPARTMENTS_DATA.length },
+    { id: '공학 계열', label: '공학 계열', count: DEPARTMENTS_DATA.filter(d => d.category === '공학 계열').length },
+    { id: '자연과학 계열', label: '자연과학', count: DEPARTMENTS_DATA.filter(d => d.category === '자연과학 계열').length },
+    { id: '의료보건 계열', label: '의료·보건', count: DEPARTMENTS_DATA.filter(d => d.category === '의료보건 계열').length },
+    { id: '인문학 계열', label: '인문학', count: DEPARTMENTS_DATA.filter(d => d.category === '인문학 계열').length },
+    { id: '사회 계열', label: '사회과학', count: DEPARTMENTS_DATA.filter(d => d.category === '사회 계열').length },
+    { id: '경상 계열', label: '경상·경영', count: DEPARTMENTS_DATA.filter(d => d.category === '경상 계열').length },
+    { id: '사범 계열', label: '사범·교육', count: DEPARTMENTS_DATA.filter(d => d.category === '사범 계열').length },
+    { id: '융합미래분야 계열', label: '융합·미래', count: DEPARTMENTS_DATA.filter(d => d.category === '융합미래분야 계열').length },
+    { id: '농생명과학 계열', label: '농생명과학', count: DEPARTMENTS_DATA.filter(d => d.category === '농생명과학 계열').length },
+    { id: '예체능 계열', label: '예체능', count: DEPARTMENTS_DATA.filter(d => d.category === '예체능 계열').length },
+    { id: '자율전공·첨단 계열', label: '자율전공·무전공', count: DEPARTMENTS_DATA.filter(d => d.category === '자율전공·첨단 계열').length },
   ];
 
   // Fetch Open API with continuous pagination
   const handleLiveSearch = async (query: string, page: number = 1, append: boolean = false) => {
-    if (!careernetKey && !work24Key) {
-      onOpenApiModal();
-      return;
-    }
-
     if (!append) {
       setIsLoadingLive(true);
       setLiveResults([]);
@@ -75,39 +74,48 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
       let fetchedItemsCount = 0;
 
       // 1. Fetch CareerNet (Major)
-      if (careernetKey) {
+      try {
         const qParam = query.trim() ? `&searchTitle=${encodeURIComponent(query.trim())}` : '';
+        const keyParam = careernetKey ? `apiKey=${encodeURIComponent(careernetKey)}&` : '';
         const res = await fetch(
-          `/api/careernet/proxy?apiKey=${encodeURIComponent(careernetKey)}&svcType=api&svcCode=MAJOR&gubun=univ_list${qParam}&thisPage=${page}&perPage=15`
+          `/api/careernet/proxy?${keyParam}svcType=api&svcCode=MAJOR&gubun=univ_list${qParam}&thisPage=${page}&perPage=20`
         );
-        const data = await res.json();
-
-        if (data?.dataSearch?.content) {
-          const rawContent = data.dataSearch.content;
-          const items = Array.isArray(rawContent) ? rawContent : [rawContent];
-          fetchedItemsCount += items.length;
-          combinedResults = [...combinedResults, ...items.map((i: any) => ({ ...i, source: 'careernet' }))];
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.dataSearch?.content) {
+            const rawContent = data.dataSearch.content;
+            const items = Array.isArray(rawContent) ? rawContent : [rawContent];
+            fetchedItemsCount += items.length;
+            combinedResults = [...combinedResults, ...items.map((i: any) => ({ ...i, source: 'careernet' }))];
+          }
         }
+      } catch (cErr) {
+        console.warn('CareerNet fetch failed, trying Work24', cErr);
       }
 
       // 2. Fetch Work24 (Major Dictionary)
-      if (work24Key) {
+      try {
         const qParam = query.trim() ? `&srchWord=${encodeURIComponent(query.trim())}` : '';
-        const res = await fetch(`/api/work24/proxy?authKey=${encodeURIComponent(work24Key)}&apiType=majorApi.do&srchType=A${qParam}&display=15&startPage=${page}`);
-        const text = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, "text/xml");
-        const majors = Array.from(xml.getElementsByTagName("major"));
-        
-        const work24Items = majors.map(m => ({
-          major: m.getElementsByTagName("majorNm")[0]?.textContent || m.getElementsByTagName("mClass")[0]?.textContent,
-          summary: m.getElementsByTagName("summary")[0]?.textContent || '상세 정보는 워크넷 공식 홈페이지에서 확인하세요.',
-          lClass: '고용24 학과정보',
-          source: 'work24',
-          link: 'https://www.work24.go.kr'
-        }));
-        fetchedItemsCount += work24Items.length;
-        combinedResults = [...combinedResults, ...work24Items];
+        const keyParam = work24Key ? `authKey=${encodeURIComponent(work24Key)}&` : '';
+        const res = await fetch(`/api/work24/proxy?${keyParam}apiType=majorApi.do&srchType=A${qParam}&display=20&startPage=${page}`);
+        if (res.ok) {
+          const text = await res.text();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(text, "text/xml");
+          const majors = Array.from(xml.getElementsByTagName("major"));
+          
+          const work24Items = majors.map(m => ({
+            major: m.getElementsByTagName("majorNm")[0]?.textContent || m.getElementsByTagName("mClass")[0]?.textContent,
+            summary: m.getElementsByTagName("summary")[0]?.textContent || '상세 정보는 워크넷 공식 홈페이지에서 확인하세요.',
+            lClass: '고용24 학과정보',
+            source: 'work24',
+            link: 'https://www.work24.go.kr'
+          }));
+          fetchedItemsCount += work24Items.length;
+          combinedResults = [...combinedResults, ...work24Items];
+        }
+      } catch (wErr) {
+        console.warn('Work24 fetch failed', wErr);
       }
 
       setHasMoreLive(fetchedItemsCount > 0);
@@ -130,12 +138,12 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
     }
   };
 
-  // Auto trigger initial load if API keys exist and user wants open API
+  // Auto trigger initial load on mount to immediately show extensive nationwide majors
   useEffect(() => {
-    if ((careernetKey || work24Key) && liveResults.length === 0 && !isLoadingLive) {
+    if (liveResults.length === 0 && !isLoadingLive) {
       handleLiveSearch('', 1, false);
     }
-  }, [careernetKey, work24Key]);
+  }, []);
 
   const filteredDepartments = DEPARTMENTS_DATA.filter((dept) => {
     const matchCategory = selectedCategory === 'all' || dept.category === selectedCategory;
@@ -144,13 +152,17 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
       !q ||
       dept.name.toLowerCase().includes(q) ||
       dept.desc.toLowerCase().includes(q) ||
+      dept.category.toLowerCase().includes(q) ||
       dept.mainCurriculum.some((m) => m.toLowerCase().includes(q)) ||
-      dept.coreRecommendedSubjects.some((s) => s.toLowerCase().includes(q));
+      dept.coreRecommendedSubjects.some((s) => s.toLowerCase().includes(q)) ||
+      dept.relatedJobs?.some((j) => j.toLowerCase().includes(q));
 
     return matchCategory && matchQuery;
   });
 
-  const displayedDepartments = filteredDepartments.slice(0, localDisplayCount);
+  const displayedDepartments = showAllLocal
+    ? filteredDepartments
+    : filteredDepartments.slice(0, localDisplayCount);
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -161,25 +173,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold">
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>대학 학과 & 전공 백과 (Open API 통합)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <a
-                href="https://www.career.go.kr/cnet/front/openapi/openApiMajorCenter.do"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 px-3 py-1 rounded-xl border border-indigo-700/60 font-semibold transition flex items-center"
-              >
-                <span>커리어넷 학과 API 센터</span>
-                <ExternalLink className="w-3 h-3 ml-1.5 text-indigo-400" />
-              </a>
-              <button
-                onClick={onOpenApiModal}
-                className="text-xs bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 px-3 py-1 rounded-xl border border-indigo-700/60 font-semibold transition flex items-center"
-              >
-                <Database className="w-3 h-3 mr-1.5 text-indigo-400" />
-                API 키 설정 {careernetKey || work24Key ? '✓' : ''}
-              </button>
+              <span>대학 학과 & 전공 백과 (전국 대학 DB)</span>
             </div>
           </div>
 
@@ -187,10 +181,10 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
             내 꿈에 맞는 대학 학과와 전공을 탐색해보세요
           </h1>
           <p className="text-indigo-100/80 text-sm sm:text-base max-w-3xl leading-relaxed">
-            2022 개정 권장과목이 탑재된 핵심 학과 백과부터, <strong>커리어넷 & 고용24 Open API</strong>를 통한 대한민국 전체 대학 학과 데이터까지 '더보기'로 무제한 확장 탐색할 수 있습니다.
+            2022 개정 권장과목이 탑재된 핵심 학과 백과부터 전국 대학 학과 데이터베이스까지 실시간 검색과 '더보기'로 편리하게 확장 탐색할 수 있습니다.
           </p>
 
-          {/* Search & API Trigger */}
+          {/* Search Trigger */}
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -213,33 +207,78 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
               className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center space-x-2 transition shadow-md shadow-indigo-600/30 shrink-0"
             >
               {isLoadingLive ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              <span>Open API 실시간 전체 검색</span>
+              <span>전국 대학 학과 실시간 검색</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-        {deptCategories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => {
-              setSelectedCategory(cat.id);
-              setLocalDisplayCount(12);
-            }}
-            className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
-              selectedCategory === cat.id
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+      {/* Category Tabs with Item Counts */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center">
+            <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+            학문 계열별 학과 분류 ({deptCategories.length}개 계열 분석)
+          </span>
+          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+            {selectedCategory === 'all' ? `전체 ${DEPARTMENTS_DATA.length}개 전공` : `${selectedCategory} (${filteredDepartments.length}개)`}
+          </span>
+        </div>
+
+        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+          {deptCategories.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setLocalDisplayCount(12);
+                  setShowAllLocal(false);
+                }}
+                className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center space-x-1.5 ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
+                }`}
+              >
+                <span>{cat.label}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                    isSelected
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-700 group-hover:bg-slate-200'
+                  }`}
+                >
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Open API Live Results Section (Continuous Load More) */}
+      {/* Analytics Summary Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+        <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-slate-500">총 핵심 전공 DB</div>
+          <div className="text-lg font-black text-slate-900">{DEPARTMENTS_DATA.length}개 학과</div>
+        </div>
+        <div className="p-3 bg-indigo-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-indigo-700">현재 조건 검색결과</div>
+          <div className="text-lg font-black text-indigo-950">{filteredDepartments.length}개 학과</div>
+        </div>
+        <div className="p-3 bg-emerald-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-emerald-700">전국 전공 DB</div>
+          <div className="text-lg font-black text-emerald-950">실시간 연계 ✓</div>
+        </div>
+        <div className="p-3 bg-amber-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-amber-700">2022 과목 매핑</div>
+          <div className="text-lg font-black text-amber-950">100% 완전 연계</div>
+        </div>
+      </div>
+
+      {/* Live Results Section (Continuous Load More) */}
       {liveResults.length > 0 && (
         <div className="bg-indigo-50/90 rounded-3xl p-6 sm:p-8 border border-indigo-200/80 shadow-sm space-y-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-200/60 pb-4">
@@ -247,7 +286,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
               <span className="w-3 h-3 rounded-full bg-indigo-600 animate-ping" />
               <div>
                 <h3 className="text-lg font-extrabold text-indigo-950 flex items-center">
-                  <Database className="w-5 h-5 mr-2 text-indigo-700" /> 커리어넷 & 고용24 Open API 실시간 전공 DB
+                  <Database className="w-5 h-5 mr-2 text-indigo-700" /> 전국 대학 학과 실시간 검색 결과
                 </h3>
                 <p className="text-xs text-indigo-800 font-medium">
                   현재 누적 <strong className="text-indigo-950 font-bold">{liveResults.length}개</strong> 학과 로드 완료 (더보기를 눌러 전체 학과를 계속 조회할 수 있습니다)
@@ -327,7 +366,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
             ))}
           </div>
 
-          {/* Continuous Infinite '더보기' Button for Open API */}
+          {/* Continuous Infinite '더보기' Button for Live Results */}
           {hasMoreLive && (
             <div className="pt-4 flex justify-center">
               <button
@@ -344,7 +383,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
                 ) : (
                   <PlusCircle className="w-4 h-4 mr-2" />
                 )}
-                <span>Open API 학과 30개 더 불러오기 (현재 {liveResults.length}개)</span>
+                <span>대학 학과 30개 더 불러오기 (현재 {liveResults.length}개)</span>
               </button>
             </div>
           )}
@@ -430,18 +469,54 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
         ))}
       </div>
 
-      {/* Pagination Load More Button for Local Data */}
-      {filteredDepartments.length > localDisplayCount && (
-        <div className="flex justify-center pt-6 pb-2">
-          <button
-            onClick={() => setLocalDisplayCount(prev => prev + 12)}
-            className="px-6 py-3 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 text-slate-800 font-extrabold text-sm shadow-sm transition flex items-center"
-          >
-            <PlusCircle className="w-4 h-4 mr-2 text-indigo-600" />
-            추천 학과 12개 더보기 ({displayedDepartments.length} / {filteredDepartments.length})
-          </button>
+      {/* Pagination Load More & View All Controls for Local Data */}
+      <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="text-xs font-bold text-slate-600 flex items-center">
+              <span>학과 열람 진행률:</span>
+              <strong className="ml-1.5 text-indigo-700 font-extrabold">{displayedDepartments.length} / {filteredDepartments.length}개</strong>
+              <span className="ml-2 text-[11px] text-slate-400 font-normal">
+                ({Math.round((displayedDepartments.length / (filteredDepartments.length || 1)) * 100)}% 열람 완료)
+              </span>
+            </div>
+            {/* Progress Bar */}
+            <div className="w-full sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-indigo-600 rounded-full transition-all duration-300"
+                style={{ width: `${(displayedDepartments.length / (filteredDepartments.length || 1)) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {filteredDepartments.length > displayedDepartments.length && (
+              <button
+                onClick={() => setLocalDisplayCount(prev => prev + 12)}
+                className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-indigo-600/20 transition flex items-center space-x-1.5"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>+ 12개 더보기</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                setShowAllLocal(!showAllLocal);
+                if (!showAllLocal) {
+                  setLocalDisplayCount(filteredDepartments.length);
+                } else {
+                  setLocalDisplayCount(12);
+                }
+              }}
+              className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm shadow-2xs transition flex items-center space-x-1.5"
+            >
+              <BookOpen className="w-4 h-4 text-slate-500" />
+              <span>{showAllLocal ? '12개씩 기본 보기' : `전체 학과 한 번에 펼치기 (${filteredDepartments.length}개)`}</span>
+            </button>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Active Local Dept Modal */}
       {activeDept && (

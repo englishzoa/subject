@@ -24,27 +24,37 @@ export default function App() {
   const [plannerInitialCategory, setPlannerInitialCategory] = useState<string>('');
   const [aiStudentContext, setAiStudentContext] = useState<any>(null);
 
-  // CareerNet & Work24 Open API key management
+  // CareerNet & Work24 Open API key management (Provided by user)
+  const DEFAULT_WORK24_JOB_KEY = '6e4fa144-d61e-45b5-9230-e558b8a02d65';
+  const DEFAULT_WORK24_MAJOR_KEY = '6b8960ad-4aa4-4754-8971-dc93c509ddbd';
+
   const [careernetKey, setCareernetKey] = useState<string>(() => {
     return localStorage.getItem('careernet_api_key') || '';
   });
-  const [work24Key, setWork24Key] = useState<string>(() => {
-    return localStorage.getItem('work24_api_key') || '';
+  const [work24JobKey, setWork24JobKey] = useState<string>(() => {
+    return localStorage.getItem('work24_job_key') || DEFAULT_WORK24_JOB_KEY;
+  });
+  const [work24MajorKey, setWork24MajorKey] = useState<string>(() => {
+    return localStorage.getItem('work24_major_key') || DEFAULT_WORK24_MAJOR_KEY;
   });
   const [isApiModalOpen, setIsApiModalOpen] = useState<boolean>(false);
 
-  const handleSaveKeys = (cKey: string, wKey: string) => {
+  const handleSaveKeys = (cKey: string, wJobKey: string, wMajorKey: string) => {
     localStorage.setItem('careernet_api_key', cKey);
-    localStorage.setItem('work24_api_key', wKey);
+    localStorage.setItem('work24_job_key', wJobKey);
+    localStorage.setItem('work24_major_key', wMajorKey);
     setCareernetKey(cKey);
-    setWork24Key(wKey);
+    setWork24JobKey(wJobKey);
+    setWork24MajorKey(wMajorKey);
   };
 
   const handleResetKeys = () => {
     localStorage.removeItem('careernet_api_key');
-    localStorage.removeItem('work24_api_key');
+    localStorage.removeItem('work24_job_key');
+    localStorage.removeItem('work24_major_key');
     setCareernetKey('');
-    setWork24Key('');
+    setWork24JobKey(DEFAULT_WORK24_JOB_KEY);
+    setWork24MajorKey(DEFAULT_WORK24_MAJOR_KEY);
   };
 
   // Header quick search router
@@ -81,8 +91,6 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onSearch={handleGlobalSearch}
-        onOpenApiConfig={() => setIsApiModalOpen(true)}
-        isApiKeySaved={!!careernetKey}
       />
 
       {/* Main Content Area */}
@@ -101,8 +109,7 @@ export default function App() {
         {activeTab === 'majors' && (
           <MajorExplorer
             careernetKey={careernetKey}
-            work24Key={work24Key}
-            onOpenApiModal={() => setIsApiModalOpen(true)}
+            work24Key={work24MajorKey}
             onSelectMajorForPlan={handleSelectMajorForPlan}
             onNavigateToSubject={(subName) => {
               setSubjectSearchQuery(subName);
@@ -129,8 +136,7 @@ export default function App() {
         {activeTab === 'jobs' && (
           <JobExplorer
             careernetKey={careernetKey}
-            work24Key={work24Key}
-            onOpenApiModal={() => setIsApiModalOpen(true)}
+            work24Key={work24JobKey}
             onNavigateToMajor={(majorName) => {
               setActiveTab('majors');
             }}
@@ -171,8 +177,6 @@ export default function App() {
 
         {activeTab === 'diagnosis' && (
           <CareerNetTest
-            careernetKey={careernetKey}
-            onOpenApiModal={() => setIsApiModalOpen(true)}
             onApplyDiagnosisToPlanner={handleApplyDiagnosisToPlanner}
             onNavigateToMajor={(majorName) => {
               setActiveTab('majors');
@@ -194,7 +198,8 @@ export default function App() {
         isOpen={isApiModalOpen}
         onClose={() => setIsApiModalOpen(false)}
         careernetKey={careernetKey}
-        work24Key={work24Key}
+        work24JobKey={work24JobKey}
+        work24MajorKey={work24MajorKey}
         onSaveKeys={handleSaveKeys}
         onResetKeys={handleResetKeys}
       />

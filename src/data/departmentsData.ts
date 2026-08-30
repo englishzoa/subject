@@ -1,6 +1,7 @@
 import { Department } from '../types';
+import { ADDITIONAL_DEPARTMENTS_DATA } from './additionalDepartments';
 
-export const DEPARTMENTS_DATA: Department[] = [
+const BASE_DEPARTMENTS_DATA: Department[] = [
   // ==========================================
   // [1] 인문학 계열 (01)
   // ==========================================
@@ -1095,3 +1096,9 @@ export const DEPARTMENTS_DATA: Department[] = [
     careerProspects: '원하는 전공(경영, 컴공, 경제, 통계 등) 100% 선택권 보장 및 로스쿨, 컨설팅펌, 빅테크 기업으로 광범위하게 진출합니다.'
   }
 ];
+
+export const DEPARTMENTS_DATA: Department[] = [
+  ...BASE_DEPARTMENTS_DATA,
+  ...ADDITIONAL_DEPARTMENTS_DATA
+];
+

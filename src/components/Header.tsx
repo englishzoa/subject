@@ -1,29 +1,17 @@
 import React, { useState } from 'react';
-import { BookOpen, GraduationCap, Calendar, Sparkles, HelpCircle, Key, CheckCircle2, Menu, X, Briefcase, Award } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  isApiKeySaved?: boolean;
-  isKeySaved?: boolean;
-  onOpenApiConfig?: () => void;
-  onOpenApiModal?: () => void;
   onSearch?: (query: string) => void;
-  onQuickSearch?: (query: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
-  isApiKeySaved,
-  isKeySaved,
-  onOpenApiConfig,
-  onOpenApiModal,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const apiKeyActive = isApiKeySaved ?? isKeySaved ?? false;
-  const openModal = onOpenApiConfig || onOpenApiModal || (() => {});
 
   const navItems = [
     { id: 'home', label: '홈' },
@@ -58,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Desktop Nav - Single Line */}
-          <nav className="hidden xl:flex items-center space-x-1 flex-1 justify-center overflow-x-auto no-scrollbar">
+          <nav className="hidden xl:flex items-center space-x-1 flex-1 justify-end overflow-x-auto no-scrollbar">
             {navItems.map((item) => {
               const active = isCurrentTab(item.id);
               return (
@@ -78,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Desktop Nav for Medium-Large screens with compact spacing */}
-          <nav className="hidden lg:flex xl:hidden items-center space-x-0.5 flex-1 justify-center overflow-x-auto no-scrollbar">
+          <nav className="hidden lg:flex xl:hidden items-center space-x-0.5 flex-1 justify-end overflow-x-auto no-scrollbar">
             {navItems.map((item) => {
               const active = isCurrentTab(item.id);
               return (
@@ -97,30 +85,8 @@ export const Header: React.FC<HeaderProps> = ({
             })}
           </nav>
 
-          {/* Right Action: Clean API Settings button */}
-          <div className="hidden sm:flex items-center flex-shrink-0 ml-3">
-            <button
-              onClick={openModal}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
-                apiKeyActive
-                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 hover:bg-emerald-900'
-                  : 'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              <Key className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{apiKeyActive ? 'API 연동됨' : 'API 설정'}</span>
-            </button>
-          </div>
-
           {/* Mobile Menu Toggle Button */}
           <div className="flex lg:hidden items-center space-x-2">
-            <button
-              onClick={openModal}
-              className="sm:hidden p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
-              title="API 설정"
-            >
-              <Key className="w-4 h-4" />
-            </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white focus:outline-none"

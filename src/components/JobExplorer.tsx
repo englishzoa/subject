@@ -4,22 +4,21 @@ import { JOBS_DATA, DEPARTMENTS_DATA } from '../data/curriculumData';
 import { 
   Search, Briefcase, TrendingUp, Sparkles, BookOpen, GraduationCap, 
   ArrowRight, ExternalLink, RefreshCw, PlusCircle, AlertCircle, Bookmark,
-  Database
+  Database, Layers
 } from 'lucide-react';
 
 interface JobExplorerProps {
-  careernetKey: string;
-  work24Key: string;
-  onOpenApiModal: () => void;
+  careernetKey?: string;
+  work24Key?: string;
+  onOpenApiModal?: () => void;
   onNavigateToMajor?: (majorName: string) => void;
   onNavigateToSubject?: (subjectName: string) => void;
   onSelectJobForPlan?: (jobName: string) => void;
 }
 
 export const JobExplorer: React.FC<JobExplorerProps> = ({
-  careernetKey,
-  work24Key,
-  onOpenApiModal,
+  careernetKey = '',
+  work24Key = '',
   onNavigateToMajor,
   onNavigateToSubject,
   onSelectJobForPlan
@@ -38,28 +37,25 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
 
   // Pagination for Local Jobs
   const [localDisplayCount, setLocalDisplayCount] = useState<number>(12);
+  const [showAllLocal, setShowAllLocal] = useState<boolean>(false);
 
+  // Exact categories derived from JOBS_DATA with accurate item counts
   const jobCategories = [
-    { id: 'all', label: '전체 직업' },
-    { id: 'IT/신기술', label: 'IT·AI·신기술' },
-    { id: '전자/제조', label: '전자·반도체·제조' },
-    { id: '로봇/모빌리티', label: '로봇·모빌리티' },
-    { id: '신소재/에너지', label: '신소재·배터리' },
-    { id: '의료/보건', label: '의료·보건·약학' },
-    { id: '생명/바이오', label: '바이오·신약' },
-    { id: '금융/경영', label: '경영·금융·컨설팅' },
-    { id: '법률/공공', label: '법률·공공·외교' },
-    { id: '교육/IT', label: '교육·에듀테크' },
-    { id: '미디어/콘텐츠', label: '미디어·콘텐츠' },
-    { id: '디자인/IT', label: '디자인·UX' },
+    { id: 'all', label: '전체 직업', count: JOBS_DATA.length },
+    { id: 'IT·인공지능', label: 'IT·인공지능', count: JOBS_DATA.filter(j => j.category === 'IT·인공지능').length },
+    { id: '전자·반도체·제조', label: '반도체·전자', count: JOBS_DATA.filter(j => j.category === '전자·반도체·제조').length },
+    { id: '로봇·모빌리티', label: '로봇·모빌리티', count: JOBS_DATA.filter(j => j.category === '로봇·모빌리티').length },
+    { id: '환경·에너지·신소재', label: '에너지·신소재', count: JOBS_DATA.filter(j => j.category === '환경·에너지·신소재').length },
+    { id: '의료·보건·약학', label: '의료·보건·약학', count: JOBS_DATA.filter(j => j.category === '의료·보건·약학').length },
+    { id: '바이오·신약', label: '바이오·신약', count: JOBS_DATA.filter(j => j.category === '바이오·신약').length },
+    { id: '경영·금융·컨설팅', label: '경영·금융', count: JOBS_DATA.filter(j => j.category === '경영·금융·컨설팅').length },
+    { id: '법률·공공·외교', label: '법률·공공', count: JOBS_DATA.filter(j => j.category === '법률·공공·외교').length },
+    { id: '교육·학술·연구', label: '교육·연구', count: JOBS_DATA.filter(j => j.category === '교육·학술·연구').length },
+    { id: '미디어·콘텐츠', label: '미디어·콘텐츠', count: JOBS_DATA.filter(j => j.category === '미디어·콘텐츠').length },
+    { id: '디자인·공간', label: '디자인·공간', count: JOBS_DATA.filter(j => j.category === '디자인·공간').length },
   ];
 
   const handleLiveSearch = async (query: string, page: number = 1, append: boolean = false) => {
-    if (!careernetKey && !work24Key) {
-      onOpenApiModal();
-      return;
-    }
-
     if (!append) {
       setIsLoadingLive(true);
       setLiveResults([]);
@@ -74,40 +70,49 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
       let fetchedItemsCount = 0;
 
       // 1. Fetch CareerNet (JOB)
-      if (careernetKey) {
+      try {
         const qParam = query.trim() ? `&searchJobNm=${encodeURIComponent(query.trim())}` : '';
+        const keyParam = careernetKey ? `apiKey=${encodeURIComponent(careernetKey)}&` : '';
         const res = await fetch(
-          `/api/careernet/proxy?apiKey=${encodeURIComponent(careernetKey)}&svcType=api&svcCode=JOB${qParam}&thisPage=${page}&perPage=15`
+          `/api/careernet/proxy?${keyParam}svcType=api&svcCode=JOB${qParam}&thisPage=${page}&perPage=20`
         );
-        const data = await res.json();
-
-        if (data?.dataSearch?.content) {
-          const rawContent = data.dataSearch.content;
-          const items = Array.isArray(rawContent) ? rawContent : [rawContent];
-          fetchedItemsCount += items.length;
-          combinedResults = [...combinedResults, ...items.map((i: any) => ({ ...i, source: 'careernet' }))];
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.dataSearch?.content) {
+            const rawContent = data.dataSearch.content;
+            const items = Array.isArray(rawContent) ? rawContent : [rawContent];
+            fetchedItemsCount += items.length;
+            combinedResults = [...combinedResults, ...items.map((i: any) => ({ ...i, source: 'careernet' }))];
+          }
         }
+      } catch (cErr) {
+        console.warn('CareerNet job fetch failed', cErr);
       }
 
       // 2. Fetch Work24 (Job Dictionary)
-      if (work24Key) {
+      try {
         const qParam = query.trim() ? `&srchWord=${encodeURIComponent(query.trim())}` : '';
-        const res = await fetch(`/api/work24/proxy?authKey=${encodeURIComponent(work24Key)}&apiType=jobDicApi.do&srchType=A${qParam}&startPage=${page}&display=15`);
-        const text = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, "text/xml");
-        const jobs = Array.from(xml.getElementsByTagName("jobDic"));
-        
-        const work24Jobs = jobs.map(j => ({
-          job_nm: j.getElementsByTagName("jobNm")[0]?.textContent,
-          summary: j.getElementsByTagName("jobDef")[0]?.textContent,
-          salery: j.getElementsByTagName("salway")[0]?.textContent, 
-          job_cate: '고용24 직업사전',
-          source: 'work24',
-          link: 'https://www.work24.go.kr'
-        }));
-        fetchedItemsCount += work24Jobs.length;
-        combinedResults = [...combinedResults, ...work24Jobs];
+        const keyParam = work24Key ? `authKey=${encodeURIComponent(work24Key)}&` : '';
+        const res = await fetch(`/api/work24/proxy?${keyParam}apiType=jobDicApi.do&srchType=A${qParam}&startPage=${page}&display=20`);
+        if (res.ok) {
+          const text = await res.text();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(text, "text/xml");
+          const jobs = Array.from(xml.getElementsByTagName("jobDic"));
+          
+          const work24Jobs = jobs.map(j => ({
+            job_nm: j.getElementsByTagName("jobNm")[0]?.textContent,
+            summary: j.getElementsByTagName("jobDef")[0]?.textContent,
+            salery: j.getElementsByTagName("salway")[0]?.textContent, 
+            job_cate: '고용24 직업사전',
+            source: 'work24',
+            link: 'https://www.work24.go.kr'
+          }));
+          fetchedItemsCount += work24Jobs.length;
+          combinedResults = [...combinedResults, ...work24Jobs];
+        }
+      } catch (wErr) {
+        console.warn('Work24 job fetch failed', wErr);
       }
 
       setHasMoreLive(fetchedItemsCount > 0);
@@ -125,30 +130,34 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
     }
   };
 
-  // Auto trigger initial load if API keys exist
+  // Auto trigger initial load on mount
   useEffect(() => {
-    if ((careernetKey || work24Key) && liveResults.length === 0 && !isLoadingLive) {
+    if (liveResults.length === 0 && !isLoadingLive) {
       handleLiveSearch('', 1, false);
     }
-  }, [careernetKey, work24Key]);
+  }, []);
 
   const filteredJobs = JOBS_DATA.filter((job) => {
     const matchCategory =
       selectedCategory === 'all' ||
-      job.category.includes(selectedCategory) ||
-      (selectedCategory === 'IT/신기술' && (job.category.includes('IT') || job.category.includes('소프트웨어')));
+      job.category === selectedCategory ||
+      job.category.includes(selectedCategory);
     const q = searchQuery.toLowerCase().trim();
     const matchQuery =
       !q ||
       job.name.toLowerCase().includes(q) ||
       job.desc.toLowerCase().includes(q) ||
+      job.category.toLowerCase().includes(q) ||
       job.coreCompetencies.some((c) => c.toLowerCase().includes(q)) ||
-      job.relatedSubjects.some((s) => s.toLowerCase().includes(q));
+      job.relatedSubjects.some((s) => s.toLowerCase().includes(q)) ||
+      job.relatedDepartments.some((m) => m.toLowerCase().includes(q));
 
     return matchCategory && matchQuery;
   });
 
-  const displayedJobs = filteredJobs.slice(0, localDisplayCount);
+  const displayedJobs = showAllLocal
+    ? filteredJobs
+    : filteredJobs.slice(0, localDisplayCount);
 
   const getDeptName = (deptIdOrName: string) => {
     const d = DEPARTMENTS_DATA.find((item) => item.id === deptIdOrName || item.name.includes(deptIdOrName));
@@ -164,25 +173,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold">
               <Briefcase className="w-3.5 h-3.5" />
-              <span>미래 유망 직업 백과 (Open API 통합)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <a
-                href="https://www.career.go.kr/cnet/front/openapi/openApiJobCenter.do"
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs bg-slate-800/80 hover:bg-slate-700 text-indigo-200 px-3 py-1 rounded-xl border border-slate-700 font-semibold transition flex items-center"
-              >
-                <span>커리어넷 직업 API 센터</span>
-                <ExternalLink className="w-3 h-3 ml-1.5 text-indigo-400" />
-              </a>
-              <button
-                onClick={onOpenApiModal}
-                className="text-xs bg-slate-800/80 hover:bg-slate-700 text-indigo-200 px-3 py-1 rounded-xl border border-slate-700 font-semibold transition flex items-center"
-              >
-                <Database className="w-3 h-3 mr-1.5 text-indigo-400" />
-                API 키 설정 {careernetKey || work24Key ? '✓' : ''}
-              </button>
+              <span>미래 유망 직업 백과 (국가 표준 직업 DB)</span>
             </div>
           </div>
 
@@ -190,7 +181,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
             미래를 선도할 유망 직업과 필요 역량을 탐색하세요
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-            각 직업의 상세 업무, 핵심 역량과 고등학교 권장이수과목을 확인하고, <strong>커리어넷 & 고용24 Open API</strong>의 방대한 직업 데이터베이스를 '더보기'로 무제한 확장 조회하세요.
+            각 직업의 상세 업무, 핵심 역량과 고등학교 권장이수과목을 확인하고, 방대한 미래 직업 데이터베이스를 실시간 검색과 '더보기'로 편리하게 확장 조회하세요.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -215,33 +206,78 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center space-x-2 transition shadow-md shadow-indigo-600/30 shrink-0"
             >
               {isLoadingLive ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              <span>Open API 실시간 전체 검색</span>
+              <span>전국 직업 정보 실시간 검색</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-        {jobCategories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => {
-              setSelectedCategory(cat.id);
-              setLocalDisplayCount(12);
-            }}
-            className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
-              selectedCategory === cat.id
-                ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
+      {/* Category Tabs with Item Counts */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center">
+            <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+            산업·직군별 직업 분류 ({jobCategories.length}개 직군 분석)
+          </span>
+          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+            {selectedCategory === 'all' ? `전체 ${JOBS_DATA.length}개 직업` : `${selectedCategory} (${filteredJobs.length}개)`}
+          </span>
+        </div>
+
+        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+          {jobCategories.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setLocalDisplayCount(12);
+                  setShowAllLocal(false);
+                }}
+                className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center space-x-1.5 ${
+                  isSelected
+                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
+                }`}
+              >
+                <span>{cat.label}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                    isSelected
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-700 group-hover:bg-slate-200'
+                  }`}
+                >
+                  {cat.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Open API Live Results Section (Continuous Load More) */}
+      {/* Analytics Summary Banner */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+        <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-slate-500">총 미래 유망 직업 DB</div>
+          <div className="text-lg font-black text-slate-900">{JOBS_DATA.length}개 직업</div>
+        </div>
+        <div className="p-3 bg-indigo-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-indigo-700">현재 조건 검색결과</div>
+          <div className="text-lg font-black text-indigo-950">{filteredJobs.length}개 직업</div>
+        </div>
+        <div className="p-3 bg-emerald-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-emerald-700">직무 역량 DB</div>
+          <div className="text-lg font-black text-emerald-950">실시간 연계 ✓</div>
+        </div>
+        <div className="p-3 bg-amber-50/60 rounded-xl space-y-1">
+          <div className="text-[11px] font-bold text-amber-700">고교 추천과목 연계</div>
+          <div className="text-lg font-black text-amber-950">100% 매핑 완료</div>
+        </div>
+      </div>
+
+      {/* Live Results Section (Continuous Load More) */}
       {liveResults.length > 0 && (
         <div className="bg-slate-100/90 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
@@ -249,7 +285,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               <span className="w-3 h-3 rounded-full bg-emerald-600 animate-ping" />
               <div>
                 <h3 className="text-lg font-extrabold text-slate-900 flex items-center">
-                  <Database className="w-5 h-5 mr-2 text-emerald-700" /> 커리어넷 & 고용24 Open API 실시간 직업 DB
+                  <Database className="w-5 h-5 mr-2 text-emerald-700" /> 전국 직업 정보 실시간 검색 결과
                 </h3>
                 <p className="text-xs text-slate-600 font-medium">
                   현재 누적 <strong className="text-slate-900 font-bold">{liveResults.length}개</strong> 직업 로드 완료 (더보기를 눌러 전체 직업을 계속 조회할 수 있습니다)
@@ -329,7 +365,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
             ))}
           </div>
 
-          {/* Continuous Infinite '더보기' Button for Open API */}
+          {/* Continuous Infinite '더보기' Button for Live Results */}
           {hasMoreLive && (
             <div className="pt-4 flex justify-center">
               <button
@@ -346,7 +382,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 ) : (
                   <PlusCircle className="w-4 h-4 mr-2 text-indigo-400" />
                 )}
-                <span>Open API 직업 30개 더 불러오기 (현재 {liveResults.length}개)</span>
+                <span>직업 정보 30개 더 불러오기 (현재 {liveResults.length}개)</span>
               </button>
             </div>
           )}
@@ -445,18 +481,54 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
         ))}
       </div>
 
-      {/* Pagination Load More Button for Local Data */}
-      {filteredJobs.length > localDisplayCount && (
-        <div className="flex justify-center pt-6 pb-2">
-          <button
-            onClick={() => setLocalDisplayCount(prev => prev + 12)}
-            className="px-6 py-3 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 text-slate-800 font-extrabold text-sm shadow-sm transition flex items-center"
-          >
-            <PlusCircle className="w-4 h-4 mr-2 text-indigo-600" />
-            직업 12개 더보기 ({displayedJobs.length} / {filteredJobs.length})
-          </button>
+      {/* Pagination Load More & View All Controls for Local Data */}
+      <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="text-xs font-bold text-slate-600 flex items-center">
+              <span>직업 열람 진행률:</span>
+              <strong className="ml-1.5 text-slate-900 font-extrabold">{displayedJobs.length} / {filteredJobs.length}개</strong>
+              <span className="ml-2 text-[11px] text-slate-400 font-normal">
+                ({Math.round((displayedJobs.length / (filteredJobs.length || 1)) * 100)}% 열람 완료)
+              </span>
+            </div>
+            {/* Progress Bar */}
+            <div className="w-full sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-slate-900 rounded-full transition-all duration-300"
+                style={{ width: `${(displayedJobs.length / (filteredJobs.length || 1)) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            {filteredJobs.length > displayedJobs.length && (
+              <button
+                onClick={() => setLocalDisplayCount(prev => prev + 12)}
+                className="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-slate-900/20 transition flex items-center space-x-1.5"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>+ 12개 더보기</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                setShowAllLocal(!showAllLocal);
+                if (!showAllLocal) {
+                  setLocalDisplayCount(filteredJobs.length);
+                } else {
+                  setLocalDisplayCount(12);
+                }
+              }}
+              className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm shadow-2xs transition flex items-center space-x-1.5"
+            >
+              <Briefcase className="w-4 h-4 text-slate-500" />
+              <span>{showAllLocal ? '12개씩 기본 보기' : `전체 직업 한 번에 펼치기 (${filteredJobs.length}개)`}</span>
+            </button>
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Local Job Detail Modal */}
       {activeJob && (
