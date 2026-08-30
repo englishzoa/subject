@@ -212,7 +212,7 @@ export default function App() {
                   대구광역시교육청 진로·학업설계 지원 플랫폼
                 </div>
                 <div className="text-xs text-slate-500">
-                  질문이 진로가 되는 대구 진로교육 • 2022 개정 교육과정 고교학점제 지원 시스템
+                  질문이 진로가 되는 대구 진로교육 • 대구광역시교육청 중등교육과 장학사 박태영
                 </div>
               </div>
             </div>
