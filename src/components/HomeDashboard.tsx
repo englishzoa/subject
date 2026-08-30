@@ -176,7 +176,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight leading-tight text-white">
               대구광역시교육청{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-sky-200 to-indigo-100">
-                진로·학업설계 종합 플랫폼
+                진로·학업설계 백화점
               </span>
             </h1>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">

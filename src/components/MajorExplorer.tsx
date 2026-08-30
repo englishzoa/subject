@@ -78,7 +78,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
         const qParam = query.trim() ? `&searchTitle=${encodeURIComponent(query.trim())}` : '';
         const keyParam = careernetKey ? `apiKey=${encodeURIComponent(careernetKey)}&` : '';
         const res = await fetch(
-          `/api/careernet/proxy?${keyParam}svcType=api&svcCode=MAJOR&gubun=univ_list${qParam}&thisPage=${page}&perPage=20`
+          `/api/careernet/proxy?${keyParam}svcType=api&svcCode=MAJOR&gubun=univ_list${qParam}&thisPage=${page}&perPage=100`
         );
         if (res.ok) {
           const data = await res.json();
@@ -97,7 +97,7 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
       try {
         const qParam = query.trim() ? `&srchWord=${encodeURIComponent(query.trim())}` : '';
         const keyParam = work24Key ? `authKey=${encodeURIComponent(work24Key)}&` : '';
-        const res = await fetch(`/api/work24/proxy?${keyParam}apiType=majorApi.do&srchType=A${qParam}&display=20&startPage=${page}`);
+        const res = await fetch(`/api/work24/proxy?${keyParam}apiType=majorApi.do&srchType=A${qParam}&display=100&startPage=${page}`);
         if (res.ok) {
           const text = await res.text();
           const parser = new DOMParser();
@@ -278,118 +278,6 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
         </div>
       </div>
 
-      {/* Live Results Section (Continuous Load More) */}
-      {liveResults.length > 0 && (
-        <div className="bg-indigo-50/90 rounded-3xl p-6 sm:p-8 border border-indigo-200/80 shadow-sm space-y-6 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-200/60 pb-4">
-            <div className="flex items-center space-x-3">
-              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-ping" />
-              <div>
-                <h3 className="text-lg font-extrabold text-indigo-950 flex items-center">
-                  <Database className="w-5 h-5 mr-2 text-indigo-700" /> 전국 대학 학과 실시간 검색 결과
-                </h3>
-                <p className="text-xs text-indigo-800 font-medium">
-                  현재 누적 <strong className="text-indigo-950 font-bold">{liveResults.length}개</strong> 학과 로드 완료 (더보기를 눌러 전체 학과를 계속 조회할 수 있습니다)
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={() => handleLiveSearch(searchQuery, 1, false)}
-                disabled={isLoadingLive}
-                className="text-xs text-indigo-700 hover:text-indigo-900 bg-white px-3 py-1.5 rounded-xl border border-indigo-200 font-bold transition flex items-center"
-              >
-                <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingLive ? 'animate-spin' : ''}`} /> 새로고침
-              </button>
-              <button
-                onClick={() => setLiveResults([])}
-                className="text-xs text-slate-600 hover:text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 font-bold transition"
-              >
-                결과 접기
-              </button>
-            </div>
-          </div>
-
-          {liveError && (
-            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 font-bold flex items-center">
-              <AlertCircle className="w-4 h-4 mr-2" />
-              {liveError}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {liveResults.map((item, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl p-5 border border-indigo-100 shadow-sm space-y-3 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-lg">
-                      {item.lClass || '대학교 전공'}
-                    </span>
-                    <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 uppercase font-semibold">{item.source}</span>
-                  </div>
-
-                  <h4 className="font-extrabold text-slate-900 text-base">
-                    {item.mClass || item.major || item.facilName}
-                  </h4>
-
-                  <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                    {item.summary || item.description || '상세 교육과정 및 진로 정보는 공식 포털에서 제공됩니다.'}
-                  </p>
-                </div>
-
-                <div className="space-y-3 pt-3 border-t border-slate-100">
-                  {item.department && (
-                    <div className="text-[11px] text-slate-500 font-medium line-clamp-1">
-                      개설대학: <span className="text-slate-700 font-semibold">{item.department}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between gap-2">
-                    <button
-                      onClick={() => setActiveLiveItem(item)}
-                      className="text-xs text-slate-600 hover:text-indigo-600 font-bold"
-                    >
-                      상세보기 ↗
-                    </button>
-                    <button
-                      onClick={() => onSelectMajorForPlan?.(item.mClass || item.major || item.facilName, item.lClass || '기타')}
-                      className="text-xs font-bold text-indigo-600 hover:text-white bg-indigo-50 hover:bg-indigo-600 px-3 py-1.5 rounded-xl border border-indigo-200 transition"
-                    >
-                      + 계획서 담기
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Continuous Infinite '더보기' Button for Live Results */}
-          {hasMoreLive && (
-            <div className="pt-4 flex justify-center">
-              <button
-                onClick={() => {
-                  const next = livePage + 1;
-                  setLivePage(next);
-                  handleLiveSearch(searchQuery, next, true);
-                }}
-                disabled={isLoadingLive}
-                className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-indigo-600/30 transition flex items-center space-x-2"
-              >
-                {isLoadingLive ? (
-                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <PlusCircle className="w-4 h-4 mr-2" />
-                )}
-                <span>대학 학과 30개 더 불러오기 (현재 {liveResults.length}개)</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Local 2022 Curriculum Recommended Departments Section */}
       <div className="flex items-center justify-between pt-2">
         <div>
@@ -518,7 +406,121 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
         </div>
       </div>
 
-      {/* Active Local Dept Modal */}
+      
+{/* Live Results Section (Continuous Load More) */}
+      {liveResults.length > 0 && (
+        <div className="bg-indigo-50/90 rounded-3xl p-6 sm:p-8 border border-indigo-200/80 shadow-sm space-y-6 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-200/60 pb-4">
+            <div className="flex items-center space-x-3">
+              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-ping" />
+              <div>
+                <h3 className="text-lg font-extrabold text-indigo-950 flex items-center">
+                  <Database className="w-5 h-5 mr-2 text-indigo-700" /> 전국 대학 학과 실시간 검색 결과
+                </h3>
+                <p className="text-xs text-indigo-800 font-medium">
+                  현재 누적 <strong className="text-indigo-950 font-bold">{liveResults.length}개</strong> 학과 로드 완료 (더보기를 눌러 전체 학과를 계속 조회할 수 있습니다)
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => handleLiveSearch(searchQuery, 1, false)}
+                disabled={isLoadingLive}
+                className="text-xs text-indigo-700 hover:text-indigo-900 bg-white px-3 py-1.5 rounded-xl border border-indigo-200 font-bold transition flex items-center"
+              >
+                <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingLive ? 'animate-spin' : ''}`} /> 새로고침
+              </button>
+              <button
+                onClick={() => setLiveResults([])}
+                className="text-xs text-slate-600 hover:text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 font-bold transition"
+              >
+                결과 접기
+              </button>
+            </div>
+          </div>
+
+          {liveError && (
+            <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 font-bold flex items-center">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {liveError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {liveResults.map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl p-5 border border-indigo-100 shadow-sm space-y-3 hover:border-indigo-400 hover:shadow-md transition flex flex-col justify-between"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-lg">
+                      {item.lClass || '대학교 전공'}
+                    </span>
+                    <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 uppercase font-semibold">{item.source}</span>
+                  </div>
+
+                  <h4 className="font-extrabold text-slate-900 text-base">
+                    {item.mClass || item.major || item.facilName}
+                  </h4>
+
+                  <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                    {item.summary || item.description || '상세 교육과정 및 진로 정보는 공식 포털에서 제공됩니다.'}
+                  </p>
+                </div>
+
+                <div className="space-y-3 pt-3 border-t border-slate-100">
+                  {item.department && (
+                    <div className="text-[11px] text-slate-500 font-medium line-clamp-1">
+                      개설대학: <span className="text-slate-700 font-semibold">{item.department}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => setActiveLiveItem(item)}
+                      className="text-xs text-slate-600 hover:text-indigo-600 font-bold"
+                    >
+                      상세보기 ↗
+                    </button>
+                    <button
+                      onClick={() => onSelectMajorForPlan?.(item.mClass || item.major || item.facilName, item.lClass || '기타')}
+                      className="text-xs font-bold text-indigo-600 hover:text-white bg-indigo-50 hover:bg-indigo-600 px-3 py-1.5 rounded-xl border border-indigo-200 transition"
+                    >
+                      + 계획서 담기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Continuous Infinite '더보기' Button for Live Results */}
+          {hasMoreLive && (
+            <div className="pt-4 flex justify-center">
+              <button
+                onClick={() => {
+                  const next = livePage + 1;
+                  setLivePage(next);
+                  handleLiveSearch(searchQuery, next, true);
+                }}
+                disabled={isLoadingLive}
+                className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-indigo-600/30 transition flex items-center space-x-2"
+              >
+                {isLoadingLive ? (
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <PlusCircle className="w-4 h-4 mr-2" />
+                )}
+                <span>대학 학과 100개 더 불러오기 (현재 {liveResults.length}개)</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      
+{/* Active Local Dept Modal */}
       {activeDept && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-6 sm:p-8 space-y-6">
