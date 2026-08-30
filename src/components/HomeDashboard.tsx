@@ -155,21 +155,28 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         <div className="absolute bottom-0 left-1/3 -mb-12 w-64 h-64 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-4xl space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>대구광역시교육청 진로·학업설계 지원 플랫폼</span>
-            </span>
-            <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
-              2022 개정 교육과정 & 2028 대입 개편 완벽 반영
-            </span>
-          </div>
+          <div className="space-y-4">
+            {/* Catchphrase Highlight Card */}
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/25 via-orange-500/20 to-rose-500/25 border-2 border-amber-400/50 shadow-lg shadow-amber-950/40">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="font-extrabold text-base sm:text-lg lg:text-xl tracking-tight text-white drop-shadow-sm">
+                질문이{' '}
+                <span className="text-amber-300 font-black">
+                  진로
+                </span>
+                가 되는 대구{' '}
+                <span className="text-amber-300 font-black">
+                  진로
+                </span>
+                교육
+              </span>
+            </div>
 
-          <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-              질문이 진로가 되는 대구 진로교육 <br className="hidden sm:inline" />
+            {/* Platform Title */}
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight leading-tight text-white">
+              대구광역시교육청{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-sky-200 to-indigo-100">
-                대구시교육청 진로·학업설계 플랫폼
+                진로·학업설계 종합 플랫폼
               </span>
             </h1>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">

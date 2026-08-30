@@ -209,7 +209,7 @@ export default function App() {
               </div>
               <div>
                 <div className="text-sm font-extrabold text-slate-900">
-                  대구광역시교육청 진로·학업설계 지원 플랫폼
+                  대구광역시교육청 진로·학업설계 종합 플랫폼
                 </div>
                 <div className="text-xs text-slate-500">
                   질문이 진로가 되는 대구 진로교육 • 대구광역시교육청 중등교육과 장학사 박태영
@@ -255,7 +255,7 @@ export default function App() {
 
           <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
             <div>
-              © 2025 Daegu Metropolitan Office of Education. All Rights Reserved.
+              © 2026 Daegu Metropolitan Office of Education. All Rights Reserved.
             </div>
             <div className="flex items-center space-x-1">
               <ShieldCheck className="w-4 h-4 text-emerald-600 mr-1" />
