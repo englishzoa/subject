@@ -374,7 +374,11 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
   onNavigateToSubject,
   onSelectJobForPlan
 }) => {
+  // Option 1 Tab Mode: 'curated' (2022 미래 유망 직업 81선) vs 'careernet' (커리어넷 1,000+ 국가표준 직업사전)
+  const [activeTabMode, setActiveTabMode] = useState<'curated' | 'careernet'>('curated');
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [liveSearchQuery, setLiveSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [activeLiveJob, setActiveLiveJob] = useState<any | null>(null);
@@ -387,6 +391,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
   const [liveError, setLiveError] = useState('');
   const [livePage, setLivePage] = useState(1);
   const [hasMoreLive, setHasMoreLive] = useState(false);
+  const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
 
   // Pagination for Local Jobs
   const [localDisplayCount, setLocalDisplayCount] = useState<number>(12);
@@ -550,7 +555,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
           }
         }
       } catch (cErr) {
-        console.warn('CareerNet job fetch failed', cErr);
+        console.warn('CareerNet job fetch failed (expected on static hosts like GitHub Pages)', cErr);
       }
 
       // 2. Fetch Work24 fallback if CareerNet is empty on query
@@ -581,7 +586,45 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
         }
       }
 
-      setHasMoreLive(fetchedItemsCount > 0);
+      // 3. Fallback for Static Hosting (e.g., GitHub Pages 404 proxy)
+      if (combinedResults.length === 0) {
+        setIsUsingFallbackData(true);
+        // Build fallback list based on JOBS_DATA and CareerNet interview mappings
+        let fallbackList = JOBS_DATA.map(j => ({
+          job_nm: j.name,
+          summary: j.desc,
+          job_cate: j.category,
+          salery: '상위 25% 평균 연봉 우수',
+          source: '국가표준 직업 DB (오프라인/정적 모드)',
+          link: `https://www.career.go.kr/cnet/front/base/job/jobList.do`,
+          inferred: {
+            category: j.category,
+            futureProspects: j.futureProspects,
+            desc: j.desc,
+            coreCompetencies: j.coreCompetencies,
+            relatedSubjects: j.relatedSubjects,
+            relatedDepartments: j.relatedDepartments,
+            educationLevel: '대학교 졸업 이상',
+            certifications: ['관련 국가기술자격 및 공인 전문자격'],
+            careerTips: '희망 전공 계열의 핵심 권장이수과목을 이수하고 학생부 교과 세특에 탐구 경험을 누적하세요.',
+            isMatched: true
+          }
+        }));
+
+        if (effectiveQuery) {
+          fallbackList = fallbackList.filter(item => 
+            item.job_nm.toLowerCase().includes(effectiveQuery.toLowerCase()) ||
+            item.summary.toLowerCase().includes(effectiveQuery.toLowerCase()) ||
+            item.job_cate.toLowerCase().includes(effectiveQuery.toLowerCase())
+          );
+        }
+        combinedResults = fallbackList;
+        fetchedItemsCount = fallbackList.length;
+      } else {
+        setIsUsingFallbackData(false);
+      }
+
+      setHasMoreLive(fetchedItemsCount >= 100);
 
       if (append) {
         setLiveResults(prev => [...prev, ...combinedResults]);
@@ -634,351 +677,574 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Hero Header */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold">
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>미래 유망 직업 백과 (국가 표준 직업 DB)</span>
-            </div>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            미래를 선도할 유망 직업과 필요 역량을 탐색하세요
-          </h1>
-          <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-            각 직업의 상세 업무, 핵심 역량과 고등학교 권장이수과목을 확인하고, 방대한 미래 직업 데이터베이스를 실시간 검색과 '더보기'로 편리하게 확장 조회하세요.
-          </p>
-
-          <div className="pt-2 flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleLiveSearch(searchQuery, 1, false);
-                  }
-                }}
-                placeholder="직업명, 핵심 역량, 고교 과목 검색 (예: 인공지능, 반도체, 의사, 퀀트, 로봇)..."
-                className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-sm pl-11 pr-4 py-3 rounded-2xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-inner"
-              />
-            </div>
-            <button
-              onClick={() => handleLiveSearch(searchQuery, 1, false)}
-              disabled={isLoadingLive}
-              className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center space-x-2 transition shadow-md shadow-indigo-600/30 shrink-0 cursor-pointer"
-            >
-              {isLoadingLive ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              <span>전국 직업 정보 실시간 검색</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Tabs with Item Counts */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center">
-            <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
-            산업·직군별 직업 분류 ({jobCategories.length}개 직군 분석)
-          </span>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setFilterInterviewOnly(!filterInterviewOnly)}
-              className={`px-3 py-1 rounded-xl text-xs font-extrabold transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs border ${
-                filterInterviewOnly
-                  ? 'bg-amber-500 text-white border-amber-600 ring-2 ring-amber-400/50'
-                  : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
-              }`}
-            >
-              <Mic className="w-3.5 h-3.5 text-amber-700" />
-              <span>🎤 직업인 인터뷰 있는 직업만 ({CAREERNET_INTERVIEW_LIST.length}건 등록)</span>
-              {filterInterviewOnly && <span className="bg-white/25 px-1.5 py-0.2 rounded-full text-[10px]">ON</span>}
-            </button>
-            <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-              {selectedCategory === 'all' ? `전체 ${filteredJobs.length}개 직업` : `${selectedCategory} (${filteredJobs.length}개)`}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-          {jobCategories.map((cat) => {
-            const isSelected = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  setLocalDisplayCount(12);
-                  setShowAllLocal(false);
-                }}
-                className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center space-x-2 cursor-pointer ${
-                  isSelected
-                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-[1.02]'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 shadow-2xs'
-                }`}
-              >
-                <span className="text-sm">{cat.icon}</span>
-                <span>{cat.label}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
-                    isSelected
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  {cat.count}
+      {/* Option 1: Top Sub-Segment Navigation Tab Selector */}
+      <div className="bg-slate-200/80 p-1.5 rounded-3xl border border-slate-300 shadow-inner flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 flex-1">
+          {/* Tab 1: Curated 2022 Future Jobs */}
+          <button
+            onClick={() => setActiveTabMode('curated')}
+            className={`flex-1 sm:flex-initial px-5 py-3.5 rounded-2xl text-xs sm:text-sm font-extrabold transition-all flex items-center space-x-3 cursor-pointer ${
+              activeTabMode === 'curated'
+                ? 'bg-white text-slate-900 shadow-lg shadow-slate-900/10 border border-slate-200/90 scale-[1.01]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/50'
+            }`}
+          >
+            <span className="text-xl">🌟</span>
+            <div className="text-left">
+              <div className="flex items-center space-x-2">
+                <span className="font-black text-slate-900 text-sm sm:text-base">2022 미래 유망 직업</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-indigo-100 text-indigo-800">
+                  {JOBS_DATA.length}선 정밀 매핑
                 </span>
-              </button>
-            );
-          })}
+              </div>
+              <div className="text-[11px] font-medium text-slate-500 hidden sm:block">
+                신산업·AI·디지털 직군별 2022 권장과목 & 직업인 인터뷰
+              </div>
+            </div>
+          </button>
+
+          {/* Tab 2: CareerNet National Job Dictionary */}
+          <button
+            onClick={() => {
+              setActiveTabMode('careernet');
+              if (liveResults.length === 0 && !isLoadingLive) {
+                handleLiveSearch(liveSearchQuery, 1, false);
+              }
+            }}
+            className={`flex-1 sm:flex-initial px-5 py-3.5 rounded-2xl text-xs sm:text-sm font-extrabold transition-all flex items-center space-x-3 cursor-pointer ${
+              activeTabMode === 'careernet'
+                ? 'bg-white text-slate-900 shadow-lg shadow-slate-900/10 border border-slate-200/90 scale-[1.01]'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/50'
+            }`}
+          >
+            <span className="text-xl">🌐</span>
+            <div className="text-left">
+              <div className="flex items-center space-x-2">
+                <span className="font-black text-slate-900 text-sm sm:text-base">커리어넷 국가표준 직업사전</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800">
+                  1,000+ 전체 탐색
+                </span>
+              </div>
+              <div className="text-[11px] font-medium text-slate-500 hidden sm:block">
+                교육부·한국직업능력연구원 Open API 연계 실시간 검색
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Badges */}
+        <div className="hidden lg:flex items-center space-x-2 pr-3 text-xs font-bold">
+          {activeTabMode === 'curated' ? (
+            <span className="bg-amber-50 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-xl flex items-center shadow-2xs">
+              <Mic className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+              직업인 멘토 인터뷰 {CAREERNET_INTERVIEW_LIST.length}건 탑재
+            </span>
+          ) : (
+            <span className="bg-indigo-50 text-indigo-900 border border-indigo-200 px-3 py-1.5 rounded-xl flex items-center shadow-2xs">
+              <Database className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+              직업 DB {liveResults.length}개 로드됨
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Analytics Summary Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-          <div className="text-[11px] font-bold text-slate-500">총 미래 유망 직업 DB</div>
-          <div className="text-lg font-black text-slate-900">{JOBS_DATA.length}개 직업</div>
-        </div>
-        <div className="p-3 bg-indigo-50/60 rounded-xl space-y-1">
-          <div className="text-[11px] font-bold text-indigo-700">현재 조건 검색결과</div>
-          <div className="text-lg font-black text-indigo-950">{filteredJobs.length}개 직업</div>
-        </div>
-        <div className="p-3 bg-amber-50/60 rounded-xl space-y-1">
-          <div className="text-[11px] font-bold text-amber-700">커리어넷 직업인 인터뷰</div>
-          <div className="text-lg font-black text-amber-950">공식 매핑 ✓</div>
-        </div>
-        <div className="p-3 bg-emerald-50/60 rounded-xl space-y-1">
-          <div className="text-[11px] font-bold text-emerald-700">2022 고교 과목 매핑</div>
-          <div className="text-lg font-black text-emerald-950">100% 매핑 완료</div>
-        </div>
-      </div>
-
-      {/* Local Curated Jobs Section */}
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-            2022 개정 추천 미래 유망 직업 일람
-          </h3>
-          <p className="text-xs text-slate-500">
-            신산업·디지털·바이오 등 전체 {filteredJobs.length}개 직업 중 {displayedJobs.length}개 표시
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayedJobs.map((job) => {
-          const interview = findCareerInterview(job.name);
-
-          return (
-            <div
-              key={job.id}
-              onClick={() => setActiveJob(job)}
-              className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-indigo-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-1 flex-wrap">
-                  <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700">
-                    {job.category}
-                  </span>
-                  <div className="flex items-center space-x-1.5">
-                    {interview && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveInterview(interview);
-                        }}
-                        className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-black bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 transition shadow-2xs cursor-pointer"
-                        title={`커리어넷 공식 직업인 인터뷰 열람 (${interview.interviewee} 멘토)`}
-                      >
-                        <span className="mr-1">🎤</span>
-                        <span>직업인 인터뷰</span>
-                      </button>
-                    )}
-                    <span className="inline-flex items-center text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      전망: {job.futureProspects}
-                    </span>
-                  </div>
+      {/* ========================================================================= */}
+      {/* VIEW 1: 2022 미래 유망 직업 81선 (CURATED VIEW)                             */}
+      {/* ========================================================================= */}
+      {activeTabMode === 'curated' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Hero Header for Curated Jobs */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold">
+                  <Briefcase className="w-3.5 h-3.5" />
+                  <span>2022 개정 고교학점제 추천 미래 유망 직업 81선</span>
                 </div>
-
-                <div>
-                  <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {job.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                    {job.desc}
-                  </p>
-                </div>
-
-                {/* Interview teaser snippet if available */}
-                {interview && (
-                  <div 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveInterview(interview);
-                    }}
-                    className="p-3 bg-gradient-to-r from-amber-50 to-orange-50/60 rounded-2xl border border-amber-200/80 hover:border-amber-400 transition cursor-pointer space-y-1"
-                  >
-                    <div className="flex items-center justify-between text-[11px] font-extrabold text-amber-900">
-                      <span className="flex items-center">
-                        <Mic className="w-3.5 h-3.5 mr-1 text-amber-600" />
-                        현직자 멘토: {interview.interviewee} ({interview.organization})
-                      </span>
-                      <span className="text-amber-700 font-bold hover:underline">인터뷰 보기 ↗</span>
-                    </div>
-                    <p className="text-[11px] text-amber-800 line-clamp-1 italic">
-                      "{interview.quote}"
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-1.5 pt-1">
-                  <div className="text-[11px] font-bold text-slate-700 flex items-center">
-                    <Sparkles className="w-3 h-3 text-amber-500 mr-1" />
-                    <span>핵심 요구 역량:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {job.coreCompetencies.slice(0, 3).map((comp, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 bg-amber-50 border border-amber-200/60 text-amber-800 text-[11px] font-bold rounded-lg"
-                      >
-                        {comp}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 pt-1">
-                  <div className="text-[11px] font-bold text-slate-700 flex items-center">
-                    <BookOpen className="w-3 h-3 text-indigo-500 mr-1" />
-                    <span>고교 추천 과목:</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {job.relatedSubjects.map((sub, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg"
-                      >
-                        {sub}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <button
+                  onClick={() => {
+                    setActiveTabMode('careernet');
+                    if (liveResults.length === 0 && !isLoadingLive) {
+                      handleLiveSearch('', 1, false);
+                    }
+                  }}
+                  className="inline-flex items-center space-x-1.5 text-xs text-indigo-200 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/80 px-3 py-1.5 rounded-xl border border-indigo-400/40 transition cursor-pointer font-bold"
+                >
+                  <span>🌐 커리어넷 국가표준 전체 직업사전 검색 ↗</span>
+                </button>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors flex items-center">
-                  상세보기 <ArrowRight className="w-3 h-3 ml-1" />
-                </span>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                미래를 선도할 81개 유망 직업과 고교 권장과목을 탐색하세요
+              </h1>
+              <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+                인공지능·반도체·바이오·로봇 등 16개 핵심 산업 분야의 유망 직업과 2022 개정 교육과정 연계 고교 권장이수과목, 필요 핵심 역량 및 커리어넷 공식 직업인 멘토 인터뷰를 확인하세요.
+              </p>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="유망 직업명, 핵심 역량, 고교 권장과목 검색 (예: 인공지능, 반도체, 의사, 퀀트, 로봇, 심리학)..."
+                    className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-sm pl-11 pr-4 py-3.5 rounded-2xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-inner"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-white bg-slate-700/80 px-2 py-1 rounded-lg"
+                    >
+                      지우기
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Tabs with Item Counts */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center">
+                <Layers className="w-3.5 h-3.5 mr-1.5 text-indigo-600" />
+                산업·직군별 직업 분류 ({jobCategories.length}개 직군 분석)
+              </span>
+              <div className="flex items-center space-x-2">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectJobForPlan?.(job.name);
-                  }}
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition"
+                  onClick={() => setFilterInterviewOnly(!filterInterviewOnly)}
+                  className={`px-3 py-1 rounded-xl text-xs font-extrabold transition-all flex items-center space-x-1.5 cursor-pointer shadow-2xs border ${
+                    filterInterviewOnly
+                      ? 'bg-amber-500 text-white border-amber-600 ring-2 ring-amber-400/50'
+                      : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                  }`}
                 >
-                  + 희망직업 등록
+                  <Mic className="w-3.5 h-3.5 text-amber-700" />
+                  <span>🎤 직업인 인터뷰 있는 직업만 ({CAREERNET_INTERVIEW_LIST.length}건 등록)</span>
+                  {filterInterviewOnly && <span className="bg-white/25 px-1.5 py-0.2 rounded-full text-[10px]">ON</span>}
+                </button>
+                <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                  {selectedCategory === 'all' ? `전체 ${filteredJobs.length}개 직업` : `${selectedCategory} (${filteredJobs.length}개)`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+              {jobCategories.map((cat) => {
+                const isSelected = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      setLocalDisplayCount(12);
+                      setShowAllLocal(false);
+                    }}
+                    className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center space-x-2 cursor-pointer ${
+                      isSelected
+                        ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-[1.02]'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 shadow-2xs'
+                    }`}
+                  >
+                    <span className="text-sm">{cat.icon}</span>
+                    <span>{cat.label}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                        isSelected
+                          ? 'bg-white/20 text-white'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {cat.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Analytics Summary Banner */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+              <div className="text-[11px] font-bold text-slate-500">총 미래 유망 직업 DB</div>
+              <div className="text-lg font-black text-slate-900">{JOBS_DATA.length}개 직업</div>
+            </div>
+            <div className="p-3 bg-indigo-50/60 rounded-xl space-y-1">
+              <div className="text-[11px] font-bold text-indigo-700">현재 조건 검색결과</div>
+              <div className="text-lg font-black text-indigo-950">{filteredJobs.length}개 직업</div>
+            </div>
+            <div className="p-3 bg-amber-50/60 rounded-xl space-y-1">
+              <div className="text-[11px] font-bold text-amber-700">커리어넷 직업인 인터뷰</div>
+              <div className="text-lg font-black text-amber-950">공식 매핑 ✓</div>
+            </div>
+            <div className="p-3 bg-emerald-50/60 rounded-xl space-y-1">
+              <div className="text-[11px] font-bold text-emerald-700">2022 고교 과목 매핑</div>
+              <div className="text-lg font-black text-emerald-950">100% 매핑 완료</div>
+            </div>
+          </div>
+
+          {/* Local Curated Jobs Section Header */}
+          <div className="flex items-center justify-between pt-2">
+            <div>
+              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+                2022 개정 추천 미래 유망 직업 일람
+              </h3>
+              <p className="text-xs text-slate-500">
+                신산업·디지털·바이오 등 전체 {filteredJobs.length}개 직업 중 {displayedJobs.length}개 표시
+              </p>
+            </div>
+          </div>
+
+          {/* Curated Jobs Grid */}
+          {displayedJobs.length === 0 ? (
+            <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
+              <Briefcase className="w-10 h-10 text-slate-300 mx-auto" />
+              <p className="text-sm font-bold text-slate-700">
+                선택하신 조건에 일치하는 유망 직업이 없습니다.
+              </p>
+              <p className="text-xs text-slate-500">
+                검색어를 수정하시거나, 전국 1,000+개 직업사전이 수록된 '커리어넷 국가표준 직업사전' 탭에서 검색해 보세요.
+              </p>
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('all');
+                    setFilterInterviewOnly(false);
+                  }}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                >
+                  필터 초기화
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTabMode('careernet');
+                    setLiveSearchQuery(searchQuery);
+                    handleLiveSearch(searchQuery, 1, false);
+                  }}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold"
+                >
+                  커리어넷 1,000+ 사전에서 검색하기 ↗
                 </button>
               </div>
             </div>
-          );
-        })}
-      </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedJobs.map((job) => {
+                const interview = findCareerInterview(job.name);
 
-      {/* Pagination Load More & View All Controls for Local Data */}
-      <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="text-xs font-bold text-slate-600 flex items-center">
-              <span>직업 열람 진행률:</span>
-              <strong className="ml-1.5 text-slate-900 font-extrabold">{displayedJobs.length} / {filteredJobs.length}개</strong>
-              <span className="ml-2 text-[11px] text-slate-400 font-normal">
-                ({Math.round((displayedJobs.length / (filteredJobs.length || 1)) * 100)}% 열람 완료)
-              </span>
+                return (
+                  <div
+                    key={job.id}
+                    onClick={() => setActiveJob(job)}
+                    className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-indigo-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between gap-1 flex-wrap">
+                        <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-700">
+                          {job.category}
+                        </span>
+                        <div className="flex items-center space-x-1.5">
+                          {interview && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveInterview(interview);
+                              }}
+                              className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-black bg-amber-100 text-amber-900 hover:bg-amber-200 border border-amber-300 transition shadow-2xs cursor-pointer"
+                              title={`커리어넷 공식 직업인 인터뷰 열람 (${interview.interviewee} 멘토)`}
+                            >
+                              <span className="mr-1">🎤</span>
+                              <span>직업인 인터뷰</span>
+                            </button>
+                          )}
+                          <span className="inline-flex items-center text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            전망: {job.futureProspects}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                          {job.name}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                          {job.desc}
+                        </p>
+                      </div>
+
+                      {/* Interview teaser snippet if available */}
+                      {interview && (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveInterview(interview);
+                          }}
+                          className="p-3 bg-gradient-to-r from-amber-50 to-orange-50/60 rounded-2xl border border-amber-200/80 hover:border-amber-400 transition cursor-pointer space-y-1"
+                        >
+                          <div className="flex items-center justify-between text-[11px] font-extrabold text-amber-900">
+                            <span className="flex items-center">
+                              <Mic className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                              현직자 멘토: {interview.interviewee} ({interview.organization})
+                            </span>
+                            <span className="text-amber-700 font-bold hover:underline">인터뷰 보기 ↗</span>
+                          </div>
+                          <p className="text-[11px] text-amber-800 line-clamp-1 italic">
+                            "{interview.quote}"
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5 pt-1">
+                        <div className="text-[11px] font-bold text-slate-700 flex items-center">
+                          <Sparkles className="w-3 h-3 text-amber-500 mr-1" />
+                          <span>핵심 요구 역량:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {job.coreCompetencies.slice(0, 3).map((comp, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 bg-amber-50 border border-amber-200/60 text-amber-800 text-[11px] font-bold rounded-lg"
+                            >
+                              {comp}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 pt-1">
+                        <div className="text-[11px] font-bold text-slate-700 flex items-center">
+                          <BookOpen className="w-3 h-3 text-indigo-500 mr-1" />
+                          <span>고교 추천 과목:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {job.relatedSubjects.map((sub, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg"
+                            >
+                              {sub}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors flex items-center">
+                        상세보기 <ArrowRight className="w-3 h-3 ml-1" />
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectJobForPlan?.(job.name);
+                        }}
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition"
+                      >
+                        + 희망직업 등록
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            {/* Progress Bar */}
-            <div className="w-full sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-slate-900 rounded-full transition-all duration-300"
-                style={{ width: `${(displayedJobs.length / (filteredJobs.length || 1)) * 100}%` }}
-              />
+          )}
+
+          {/* Pagination Load More & View All Controls for Local Data */}
+          {filteredJobs.length > 0 && (
+            <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="text-xs font-bold text-slate-600 flex items-center">
+                    <span>직업 열람 진행률:</span>
+                    <strong className="ml-1.5 text-slate-900 font-extrabold">{displayedJobs.length} / {filteredJobs.length}개</strong>
+                    <span className="ml-2 text-[11px] text-slate-400 font-normal">
+                      ({Math.round((displayedJobs.length / (filteredJobs.length || 1)) * 100)}% 열람 완료)
+                    </span>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="w-full sm:w-64 h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-slate-900 rounded-full transition-all duration-300"
+                      style={{ width: `${(displayedJobs.length / (filteredJobs.length || 1)) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  {filteredJobs.length > displayedJobs.length && (
+                    <button
+                      onClick={() => setLocalDisplayCount(prev => prev + 12)}
+                      className="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-slate-900/20 transition flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      <span>+ 12개 더보기</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setShowAllLocal(!showAllLocal);
+                      if (!showAllLocal) {
+                        setLocalDisplayCount(filteredJobs.length);
+                      } else {
+                        setLocalDisplayCount(12);
+                      }
+                    }}
+                    className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm shadow-2xs transition flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Briefcase className="w-4 h-4 text-slate-500" />
+                    <span>{showAllLocal ? '12개씩 기본 보기' : `전체 직업 한 번에 펼치기 (${filteredJobs.length}개)`}</span>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="flex items-center gap-2.5">
-            {filteredJobs.length > displayedJobs.length && (
-              <button
-                onClick={() => setLocalDisplayCount(prev => prev + 12)}
-                className="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-slate-900/20 transition flex items-center space-x-1.5"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>+ 12개 더보기</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => {
-                setShowAllLocal(!showAllLocal);
-                if (!showAllLocal) {
-                  setLocalDisplayCount(filteredJobs.length);
-                } else {
-                  setLocalDisplayCount(12);
-                }
-              }}
-              className="px-5 py-2.5 rounded-2xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs sm:text-sm shadow-2xs transition flex items-center space-x-1.5"
-            >
-              <Briefcase className="w-4 h-4 text-slate-500" />
-              <span>{showAllLocal ? '12개씩 기본 보기' : `전체 직업 한 번에 펼치기 (${filteredJobs.length}개)`}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      
-      {/* Live Results Section (Continuous Load More) */}
-      {liveResults.length > 0 && (
-        <div className="bg-slate-100/90 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-6 animate-fadeIn">
-          {/* Header & Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
-            <div className="flex items-center space-x-3">
-              <span className="w-3 h-3 rounded-full bg-indigo-600 animate-ping shrink-0" />
+          {/* Bottom Switch Banner */}
+          <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border border-indigo-100 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-indigo-600 text-white rounded-2xl text-xl shadow-md shadow-indigo-600/20">
+                🌐
+              </div>
               <div>
-                <h3 className="text-lg font-extrabold text-slate-900 flex items-center flex-wrap gap-2">
-                  <Database className="w-5 h-5 text-indigo-700 inline" />
-                  <span>커리어넷(CareerNet) 전국 직업 실시간 연계 DB</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-100 text-indigo-800 border border-indigo-200">
-                    총 {liveResults.length}개 로드됨
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-600 font-medium mt-0.5">
-                  교육부·한국직업능력연구원 커리어넷 Open API 연계 — 계열 및 직군별 탭을 클릭하여 원하는 분야의 직업을 세부 분류별로 탐색하세요.
+                <h4 className="text-sm font-extrabold text-slate-900">
+                  더 많은 국가표준 직업(1,000+개)을 찾고 계신가요?
+                </h4>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  교육부 커리어넷 Open API 연계 직업사전 탭에서 대한민국 전체 직업과 현장 실무 직무까지 모두 검색할 수 있습니다.
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 shrink-0">
+            <button
+              onClick={() => {
+                setActiveTabMode('careernet');
+                if (liveResults.length === 0 && !isLoadingLive) {
+                  handleLiveSearch('', 1, false);
+                }
+              }}
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs sm:text-sm font-extrabold transition shadow-md shadow-indigo-600/20 flex items-center space-x-2 shrink-0 cursor-pointer"
+            >
+              <span>커리어넷 전체 직업사전 탐색하기</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* VIEW 2: 커리어넷 국가표준 전체 직업사전 (1,000+개)                            */}
+      {/* ========================================================================= */}
+      {activeTabMode === 'careernet' && (
+        <div className="space-y-6 animate-fadeIn">
+          {/* Hero Header for CareerNet Live Database */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
+                  <Database className="w-3.5 h-3.5" />
+                  <span>교육부 커리어넷 Open API & 고용24 실시간 연계 DB</span>
+                </div>
+                <button
+                  onClick={() => setActiveTabMode('curated')}
+                  className="inline-flex items-center space-x-1.5 text-xs text-emerald-200 hover:text-white bg-slate-900/60 hover:bg-slate-900/90 px-3 py-1.5 rounded-xl border border-emerald-400/40 transition cursor-pointer font-bold"
+                >
+                  <span>🌟 2022 미래 유망 직업 81선 탭으로 이동 ↗</span>
+                </button>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                커리어넷 국가표준 전체 직업사전 통합 검색
+              </h1>
+              <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
+                대한민국 모든 공인 직업 정보를 실시간으로 검색하고, 2022 개정 고교 권장과목·연계 학과 지능형 추론 정보 및 직업인 인터뷰를 확인하세요.
+              </p>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={liveSearchQuery}
+                    onChange={(e) => setLiveSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleLiveSearch(liveSearchQuery, 1, false);
+                      }
+                    }}
+                    placeholder="검색할 직업명을 입력하세요 (예: 변리사, 임상병리사, 웹툰작가, 데이터분석가, 바리스타, 도배사)..."
+                    className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-sm pl-11 pr-4 py-3.5 rounded-2xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-400 shadow-inner"
+                  />
+                  {liveSearchQuery && (
+                    <button
+                      onClick={() => {
+                        setLiveSearchQuery('');
+                        handleLiveSearch('', 1, false);
+                      }}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-white bg-slate-700/80 px-2 py-1 rounded-lg"
+                    >
+                      초기화
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleLiveSearch(liveSearchQuery, 1, false)}
+                  disabled={isLoadingLive}
+                  className="px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold flex items-center justify-center space-x-2 transition shadow-md shadow-emerald-600/30 shrink-0 cursor-pointer"
+                >
+                  {isLoadingLive ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  <span>직업 검색</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Notice for GitHub Pages Fallback if active */}
+          {isUsingFallbackData && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start space-x-3 text-xs text-amber-900">
+              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="font-extrabold text-amber-950">정적 호스팅(GitHub Pages) 환경 안내</div>
+                <div className="leading-relaxed">
+                  GitHub Pages와 같은 순수 정적 웹 호스팅 환경에서는 백엔드 Node.js 프록시 서버가 지원되지 않아 실시간 API 대신 <strong>내장된 표준 직업 데이터베이스 및 인터뷰 연계 DB</strong>로 자동 전환되어 안전하게 서비스됩니다.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Controls Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-ping shrink-0" />
+              <span className="text-xs font-extrabold text-slate-800">
+                로드된 직업: <strong className="text-emerald-700 font-black">{liveResults.length}개</strong>
+              </span>
+              <span className="text-xs text-slate-400">|</span>
+              <span className="text-xs text-slate-500">
+                {filteredLiveResults.length}개 표시 중
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-2 flex-wrap gap-2">
               {/* View Mode Toggle */}
-              <div className="bg-white p-0.5 rounded-xl border border-slate-200 flex items-center text-xs font-bold shadow-2xs">
+              <div className="bg-slate-100 p-0.5 rounded-xl border border-slate-200 flex items-center text-xs font-bold">
                 <button
                   onClick={() => setLiveViewMode('all')}
-                  className={`px-2.5 py-1.5 rounded-lg transition ${
-                    liveViewMode === 'all' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                    liveViewMode === 'all' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   카테고리 필터 뷰
                 </button>
                 <button
                   onClick={() => setLiveViewMode('grouped')}
-                  className={`px-2.5 py-1.5 rounded-lg transition ${
-                    liveViewMode === 'grouped' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900'
+                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                    liveViewMode === 'grouped' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   계열별 묶어보기
@@ -986,17 +1252,11 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               </div>
 
               <button
-                onClick={() => handleLiveSearch(searchQuery, 1, false)}
+                onClick={() => handleLiveSearch(liveSearchQuery, 1, false)}
                 disabled={isLoadingLive}
-                className="text-xs text-slate-700 hover:text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 font-bold transition flex items-center shadow-2xs cursor-pointer"
+                className="text-xs text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 font-bold transition flex items-center cursor-pointer"
               >
-                <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingLive ? 'animate-spin' : ''}`} /> 새로고침
-              </button>
-              <button
-                onClick={() => setLiveResults([])}
-                className="text-xs text-slate-600 hover:text-slate-900 bg-white px-3 py-1.5 rounded-xl border border-slate-200 font-bold transition cursor-pointer"
-              >
-                결과 접기
+                <RefreshCw className={`w-3 h-3 mr-1.5 ${isLoadingLive ? 'animate-spin' : ''}`} /> 새로고침
               </button>
             </div>
           </div>
@@ -1006,13 +1266,13 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
             <div className="space-y-2.5 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-slate-700 flex items-center">
-                  <Layers className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+                  <Layers className="w-3.5 h-3.5 mr-1 text-emerald-600" />
                   커리어넷 직업 계열·직군 분류 (클릭 시 해당 계열만 필터링)
                 </span>
                 {liveCategoryFilter !== 'all' && (
                   <button
                     onClick={() => setLiveCategoryFilter('all')}
-                    className="text-indigo-600 hover:underline font-bold text-[11px]"
+                    className="text-emerald-700 hover:underline font-bold text-[11px] cursor-pointer"
                   >
                     전체 보기로 초기화
                   </button>
@@ -1025,7 +1285,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                   onClick={() => setLiveCategoryFilter('all')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
                     liveCategoryFilter === 'all'
-                      ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                       : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
                   }`}
                 >
@@ -1052,9 +1312,9 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                         onClick={() => setLiveCategoryFilter(isSelected ? 'all' : cat.id)}
                         className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
                           isSelected
-                            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
+                            ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                             : count > 0
-                            ? 'bg-white text-slate-700 hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-200'
+                            ? 'bg-white text-slate-700 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-200'
                             : 'bg-slate-50/70 text-slate-400 border border-slate-100'
                         }`}
                       >
@@ -1065,7 +1325,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                             isSelected
                               ? 'bg-white/20 text-white'
                               : count > 0
-                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                               : 'bg-slate-100 text-slate-400'
                           }`}
                         >
@@ -1094,7 +1354,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                     <h4 className="text-base font-extrabold text-slate-900 flex items-center space-x-2">
                       <span className="text-lg">{group.icon}</span>
                       <span>{group.category}</span>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                         {group.items.length}개 직업
                       </span>
                     </h4>
@@ -1111,14 +1371,14 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                         <div
                           key={idx}
                           onClick={() => setActiveLiveJob({ ...item, inferred })}
-                          className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-indigo-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
+                          className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-emerald-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
                         >
                           <div className="space-y-4">
                             <div className="flex items-center justify-between gap-1 flex-wrap">
                               <span className={`px-2.5 py-1 rounded-xl text-xs font-bold ${
                                 inferred.isNonDegree 
                                   ? 'bg-amber-50 text-amber-800 border border-amber-200' 
-                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                                  : 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                               }`}>
                                 {inferred.isNonDegree ? '🤝 생활돌봄·자격실무' : inferred.category}
                               </span>
@@ -1145,7 +1405,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                             </div>
 
                             <div>
-                              <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                              <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
                                 {jobTitle}
                               </h3>
                               <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -1212,14 +1472,14 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                                 {/* 2022 Recommended Subjects */}
                                 <div className="space-y-1.5 pt-1">
                                   <div className="text-[11px] font-bold text-slate-700 flex items-center">
-                                    <BookOpen className="w-3 h-3 text-indigo-500 mr-1" />
+                                    <BookOpen className="w-3 h-3 text-emerald-600 mr-1" />
                                     <span>2022 권장 과목:</span>
                                   </div>
                                   <div className="flex flex-wrap gap-1">
                                     {inferred.relatedSubjects.slice(0, 4).map((sub: string, sIdx: number) => (
                                       <span
                                         key={sIdx}
-                                        className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg"
+                                        className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-800 text-[11px] font-bold rounded-lg"
                                       >
                                         {sub}
                                       </span>
@@ -1249,7 +1509,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                           </div>
 
                           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                            <span className="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors flex items-center">
+                            <span className="text-xs font-semibold text-slate-400 group-hover:text-emerald-700 transition-colors flex items-center">
                               상세보기 <ArrowRight className="w-3 h-3 ml-1" />
                             </span>
                             <button
@@ -1257,7 +1517,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                                 e.stopPropagation();
                                 onSelectJobForPlan?.(jobTitle);
                               }}
-                              className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition"
+                              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition"
                             >
                               + 희망직업 등록
                             </button>
@@ -1278,14 +1538,18 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center space-y-3">
                   <Briefcase className="w-10 h-10 text-slate-300 mx-auto" />
                   <p className="text-sm font-bold text-slate-700">
-                    현재 로드된 커리어넷 직업 중 '{liveCategoryFilter}' 계열 직업이 없습니다.
+                    현재 조건에 부합하는 커리어넷 직업이 없습니다.
                   </p>
                   <p className="text-xs text-slate-500">
-                    아래 '직업 정보 100개 더 불러오기'를 누르시거나 다른 카테고리를 선택해 보세요.
+                    검색어를 변경하시거나, 아래 '직업 정보 더 불러오기'를 클릭해 보세요.
                   </p>
                   <button
-                    onClick={() => setLiveCategoryFilter('all')}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-sm"
+                    onClick={() => {
+                      setLiveCategoryFilter('all');
+                      setLiveSearchQuery('');
+                      handleLiveSearch('', 1, false);
+                    }}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm"
                   >
                     전체 직업 보기
                   </button>
@@ -1301,14 +1565,14 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                       <div
                         key={idx}
                         onClick={() => setActiveLiveJob({ ...item, inferred })}
-                        className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-indigo-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
+                        className="bg-white rounded-3xl p-6 border border-slate-200/80 hover:border-emerald-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
                       >
                         <div className="space-y-4">
                           <div className="flex items-center justify-between gap-1 flex-wrap">
                             <span className={`px-2.5 py-1 rounded-xl text-xs font-bold ${
                               inferred.isNonDegree 
                                 ? 'bg-amber-50 text-amber-800 border border-amber-200' 
-                                : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
+                                : 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                             }`}>
                               {inferred.isNonDegree ? '🤝 생활돌봄·자격실무' : inferred.category}
                             </span>
@@ -1335,7 +1599,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                           </div>
 
                           <div>
-                            <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                            <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-emerald-700 transition-colors">
                               {jobTitle}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -1402,14 +1666,14 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                               {/* 2022 Recommended Subjects */}
                               <div className="space-y-1.5 pt-1">
                                 <div className="text-[11px] font-bold text-slate-700 flex items-center">
-                                  <BookOpen className="w-3 h-3 text-indigo-500 mr-1" />
+                                  <BookOpen className="w-3 h-3 text-emerald-600 mr-1" />
                                   <span>2022 권장 과목:</span>
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {inferred.relatedSubjects.slice(0, 4).map((sub: string, sIdx: number) => (
                                     <span
                                       key={sIdx}
-                                      className="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[11px] font-bold rounded-lg"
+                                      className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-800 text-[11px] font-bold rounded-lg"
                                     >
                                       {sub}
                                     </span>
@@ -1439,7 +1703,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                          <span className="text-xs font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors flex items-center">
+                          <span className="text-xs font-semibold text-slate-400 group-hover:text-emerald-700 transition-colors flex items-center">
                             상세보기 <ArrowRight className="w-3 h-3 ml-1" />
                           </span>
                           <button
@@ -1447,7 +1711,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                               e.stopPropagation();
                               onSelectJobForPlan?.(jobTitle);
                             }}
-                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl transition"
+                            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-xl transition"
                           >
                             + 희망직업 등록
                           </button>
@@ -1467,15 +1731,15 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 onClick={() => {
                   const next = livePage + 1;
                   setLivePage(next);
-                  handleLiveSearch(searchQuery, next, true);
+                  handleLiveSearch(liveSearchQuery, next, true);
                 }}
                 disabled={isLoadingLive}
                 className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-slate-900/30 transition flex items-center space-x-2 cursor-pointer"
               >
                 {isLoadingLive ? (
-                  <RefreshCw className="w-4 h-4 animate-spin mr-2 text-indigo-400" />
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2 text-emerald-400" />
                 ) : (
-                  <PlusCircle className="w-4 h-4 mr-2 text-indigo-400" />
+                  <PlusCircle className="w-4 h-4 mr-2 text-emerald-400" />
                 )}
                 <span>커리어넷 직업 정보 100개 더 불러오기 (현재 {liveResults.length}개 로드됨)</span>
               </button>

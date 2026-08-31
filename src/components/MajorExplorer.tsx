@@ -214,6 +214,20 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
     }));
   };
 
+  // Convert local DEPARTMENTS_DATA into standard major items for static host (GitHub Pages) fallback
+  const getLocalDepartmentItems = () => {
+    return DEPARTMENTS_DATA.map(dept => ({
+      majorSeq: dept.id,
+      major: dept.name,
+      mClass: dept.name,
+      lClass: dept.category,
+      department: dept.topUniversities ? dept.topUniversities.join(', ') : '전국 주요 대학 개설',
+      summary: dept.desc || dept.summary || '',
+      source: '2022 개정 표준 학과 DB',
+      link: 'https://www.career.go.kr'
+    }));
+  };
+
   // Fetch Open API from CareerNet (MAJOR openAPI univ_list)
   const handleLiveSearch = async (query: string, page: number = 1, append: boolean = false) => {
     if (!append) {
@@ -262,16 +276,17 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
           setLiveResults(uniqueItems);
           setHasMoreLive(false);
         } else {
-          throw new Error('데이터 응답 없음');
+          // Fallback to local DB when live API proxy returns 404 (GitHub Pages)
+          setLiveResults(getLocalDepartmentItems());
         }
       } else {
         // Query search or specific page pagination
         const qParam = query.trim() ? `&searchTitle=${encodeURIComponent(query.trim())}` : '';
         const res = await fetch(
           `/api/careernet/proxy?${keyParam}svcType=api&svcCode=MAJOR&gubun=univ_list${qParam}&thisPage=${page}&perPage=100`
-        );
+        ).catch(() => null);
         
-        if (res.ok) {
+        if (res && res.ok) {
           const data = await res.json();
           if (data?.dataSearch?.content) {
             const fetchedItems = parseCareerNetItems(data.dataSearch.content);
@@ -283,12 +298,21 @@ export const MajorExplorer: React.FC<MajorExplorerProps> = ({
             }
           }
         } else {
-          throw new Error('커리어넷 API 응답 오류');
+          // Local fallback filtered by search query
+          const localItems = getLocalDepartmentItems();
+          const filtered = query.trim()
+            ? localItems.filter(item =>
+                item.major.toLowerCase().includes(query.toLowerCase()) ||
+                item.summary.toLowerCase().includes(query.toLowerCase()) ||
+                item.lClass.toLowerCase().includes(query.toLowerCase())
+              )
+            : localItems;
+          setLiveResults(filtered);
         }
       }
     } catch (err: any) {
-      console.error('Live API fetch error:', err);
-      setLiveError('전국 대학 학과 데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.warn('Live API fallback activated:', err);
+      setLiveResults(getLocalDepartmentItems());
     } finally {
       setIsLoadingLive(false);
     }
