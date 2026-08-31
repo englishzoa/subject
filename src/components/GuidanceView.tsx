@@ -155,7 +155,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Top Banner with KEDI hscredit.kr Official Integration */}
+      {/* Top Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-6 sm:p-8 md:p-10 shadow-xl border border-slate-800">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-1/4 -mb-10 w-80 h-80 bg-sky-600/15 rounded-full blur-3xl pointer-events-none"></div>
@@ -165,7 +165,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-extrabold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>한국교육개발원(KEDI) 고교학점제 종합 추진 지원센터 연계</span>
+                <span>2022 개정 교육과정 완벽 안내</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                 2022 개정 교육과정 · 2028 대입 개편
@@ -177,7 +177,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
             </h1>
 
             <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
-              <strong>hscredit.kr(고교학점제 포털)</strong>의 핵심 세부 지침을 바탕으로, 
+              교육부 2022 개정 교육과정 지침을 바탕으로, 
               고교학점제의 정의·배경, 7단계 운영 절차, 192학점 이수 기준, 최소 성취수준 보장지도 및 2028 대입 성취평가제까지 
               한눈에 이해하고 나만의 학업 경로를 주도적으로 완성하세요.
             </p>
@@ -190,7 +190,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
               rel="noreferrer"
               className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-indigo-200 hover:text-white border border-indigo-300/30 text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <span>hscredit.kr/about/intro 원문</span>
+              <span>hscredit.kr 공식 포털</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
             <button
@@ -199,6 +199,13 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>3개년 192학점 시뮬레이터</span>
+            </button>
+            <button
+              onClick={() => onNavigate('subjects')}
+              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition flex items-center justify-center space-x-1.5"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>과목 정보 살펴보기</span>
             </button>
           </div>
         </div>
@@ -236,7 +243,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
               <div>
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  KEDI 표준 정의
+                  교육부 표준 정의
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-1.5">
                   고교학점제(High School Credit System)란?
@@ -303,7 +310,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
                   기존 교육과정 vs 2022 개정 고교학점제 비교표
                 </h3>
               </div>
-              <span className="text-xs text-slate-400">hscredit.kr 표준 대조표</span>
+              <span className="text-xs text-slate-400">교육과정 비교 분석표</span>
             </div>
 
             <div className="overflow-x-auto">
@@ -436,7 +443,7 @@ export const GuidanceView: React.FC<GuidanceViewProps> = ({ onNavigate }) => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
               <div>
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  hscredit.kr 표준 프로세스
+                  고교학점제 표준 프로세스
                 </span>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-1.5">
                   고교학점제 7단계 운영 절차 (Lifecycle)

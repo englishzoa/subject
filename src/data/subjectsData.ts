@@ -5,17 +5,31 @@ export const SUBJECTS_DATA: Subject[] = [
   // [1] 국어 교과군
   // ==========================================
   {
-    id: 's_kor_com',
-    name: '공통국어 1·2',
+    id: 's_kor_com1',
+    name: '공통국어1',
     group: '국어',
     type: '공통과목',
-    credits: 8,
-    desc: '국어 활동의 기본이 되는 듣기·말하기, 읽기, 쓰기, 문법, 문학 영역의 기초 소양을 기르는 공통 과목입니다.',
-    coreConcepts: ['의사소통', '비판적 독해', '글쓰기 윤리', '국어의 구조', '문학적 상상력'],
-    followUpSubjects: ['s_kor_speech', 's_kor_read', 's_kor_lit', 's_kor_theme'],
-    relatedFields: ['인문', '사회', '교육', '자연', '공학', '예체능'],
+    credits: 4,
+    desc: '듣기·말하기, 읽기, 쓰기 영역의 기본 원리를 익히고 비판적 사고와 창의적 국어 사용 능력을 기르는 1학년 1학기 공통 필수 과목입니다.',
+    coreConcepts: ['의사소통', '비판적 독해', '글쓰기 윤리', '어휘력', '텍스트 분석'],
+    followUpSubjects: ['s_kor_com2', 's_kor_speech', 's_kor_read', 's_kor_lit'],
+    relatedFields: ['인문', '사회', '교육', '자연', '공학', '예체능', '전 계열'],
     evaluationType: '석차등급+성취도',
     studyTips: '기본 어휘력과 다양한 텍스트의 맥락 이해 능력을 다지고 자신의 생각을 조리 있게 표현하는 연습이 핵심입니다.'
+  },
+  {
+    id: 's_kor_com2',
+    name: '공통국어2',
+    group: '국어',
+    type: '공통과목',
+    credits: 4,
+    desc: '국어의 구조와 문법 체계, 갈래별 문학 작품 감상 및 비평적 읽기·쓰기 역량을 심화하는 1학년 2학기 공통 필수 과목입니다.',
+    coreConcepts: ['국어의 구조', '문법 원리', '문학적 상상력', '갈래별 감상', '비평적 글쓰기'],
+    prerequisites: ['s_kor_com1'],
+    followUpSubjects: ['s_kor_speech', 's_kor_read', 's_kor_lit', 's_kor_theme'],
+    relatedFields: ['인문', '사회', '교육', '미디어', '문화콘텐츠', '전 계열'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '국어 문법 체계의 원리와 고전문학 및 현대문학의 갈래별 특성을 깊이 있게 정리하세요.'
   },
   {
     id: 's_kor_speech',
@@ -25,7 +39,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '듣기·말하기 영역과 문법 영역을 심화·확장한 과목으로, 담화 맥락에 적절한 화법 능력과 언어 탐구 능력을 함양합니다.',
     coreConcepts: ['의사소통', '공감적 이해', '담화 구성', '비판적 사고', '언어생활', '사회적 맥락'],
-    prerequisites: ['s_kor_com'],
+    prerequisites: ['s_kor_com1', 's_kor_com2'],
     relatedFields: ['인문', '사회', '미디어', '교육', '법학'],
     evaluationType: '석차등급+성취도',
     studyTips: '문법의 규칙성과 예외 조항을 구조화하여 정리하고 다양한 담화 상황에서의 표현 전략을 연습하세요.'
@@ -38,7 +52,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '읽기와 쓰기 영역을 심화·확장한 과목으로, 학술적·비판적 독서와 논리적 글쓰기 능력을 기릅니다.',
     coreConcepts: ['비판적 독해', '논증 구조', '요약과 정리', '정보 활용', '문제 해결', '논리적 글쓰기'],
-    prerequisites: ['s_kor_com'],
+    prerequisites: ['s_kor_com1', 's_kor_com2'],
     relatedFields: ['인문', '사회', '자연', '공학', '의약', '전 계열'],
     evaluationType: '석차등급+성취도',
     studyTips: '자신의 희망 전공과 관련된 학술 아티클이나 도서를 읽고 논리적 서평이나 소논문 형태의 보고서를 작성해보세요.'
@@ -51,7 +65,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '문학의 가치와 중요성을 이해하고 작품을 깊이 있게 수용·생산하며 비판적이고 창의적인 사고 역량을 기릅니다.',
     coreConcepts: ['문학 감상', '비판적 해석', '공감과 성찰', '상징과 서사', '문학 맥락', '창의적 표현'],
-    prerequisites: ['s_kor_com'],
+    prerequisites: ['s_kor_com1', 's_kor_com2'],
     relatedFields: ['인문', '문화콘텐츠', '예술', '교육'],
     evaluationType: '석차등급+성취도',
     studyTips: '작품의 시대적 배경과 작가의 문제의식을 연결하여 주체적인 감상평을 도출하는 훈련을 권장합니다.'
@@ -135,17 +149,31 @@ export const SUBJECTS_DATA: Subject[] = [
   // [2] 수학 교과군
   // ==========================================
   {
-    id: 's_math_com',
-    name: '공통수학 1·2',
+    id: 's_math_com1',
+    name: '공통수학1',
     group: '수학',
     type: '공통과목',
-    credits: 8,
-    desc: '다항식, 방정식과 부등식, 경우의 수, 행렬, 도형의 방정식, 집합과 명제, 함수 등을 다루는 수학의 필수 기초 과목입니다.',
-    coreConcepts: ['다항식 연산', '이차방정식·부등식', '행렬과 연산', '좌표평면과 도형', '함수와 그래프'],
-    followUpSubjects: ['s_math_alg', 's_math_calc1', 's_math_prob'],
-    relatedFields: ['공학', '자연', '의약', '경영·경제', '사회'],
+    credits: 4,
+    desc: '다항식의 연산, 복소수와 이차방정식, 이차부등식, 경우의 수, 행렬과 연산 등 고교 수학의 기초를 다지는 1학년 1학기 공통 필수 과목입니다.',
+    coreConcepts: ['다항식 연산', '이차방정식·부등식', '경우의 수', '행렬과 그 연산', '수학적 모델링'],
+    followUpSubjects: ['s_math_com2', 's_math_alg', 's_math_calc1', 's_math_prob'],
+    relatedFields: ['공학', '자연', '의약', '경영·경제', 'IT·SW', '사회'],
     evaluationType: '석차등급+성취도',
-    studyTips: '개념 간의 논리적 연계성을 파악하고 매일 꾸준한 문제 해결 훈련과 오답 분석이 필수적입니다.'
+    studyTips: '2022 개정에서 도입된 행렬 단원과 다항식 및 방정식의 연계 원리를 확실히 다져야 합니다.'
+  },
+  {
+    id: 's_math_com2',
+    name: '공통수학2',
+    group: '수학',
+    type: '공통과목',
+    credits: 4,
+    desc: '평면좌표와 직선·원의 방정식, 도형의 이동, 집합과 명제, 함수와 그래프 등 기하와 해석학의 기초를 확립하는 1학년 2학기 공통 필수 과목입니다.',
+    coreConcepts: ['도형의 방정식', '원의 방정식과 위치관계', '도형의 이동', '집합과 명제', '함수와 그래프', '유리·무리함수'],
+    prerequisites: ['s_math_com1'],
+    followUpSubjects: ['s_math_alg', 's_math_calc1', 's_math_prob', 's_math_geo', 's_math_ai'],
+    relatedFields: ['공학', '자연', '의약', '경영·경제', '데이터사이언스'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '도형을 좌표평면 상의 대수적 방정식으로 표현하는 능력과 함수의 합성·역함수 성질을 완벽히 체화하세요.'
   },
   {
     id: 's_math_alg',
@@ -155,7 +183,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '지수와 로그, 삼각함수, 수열 등 자연현상과 사회현상의 규칙성을 수학적으로 모델링하는 핵심 기초 과목입니다.',
     coreConcepts: ['지수함수와 로그함수', '삼각함수의 성질과 그래프', '등차·등비수열', '수학적 귀납법'],
-    prerequisites: ['s_math_com'],
+    prerequisites: ['s_math_com1', 's_math_com2'],
     followUpSubjects: ['s_math_calc1', 's_math_calc2', 's_math_geo'],
     relatedFields: ['공학', '자연', '의약', '경영·경제', 'IT'],
     evaluationType: '석차등급+성취도',
@@ -183,7 +211,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '조건부 확률, 확률분포, 통계적 추정 등을 다루며 불확실한 미래를 예측하고 데이터를 분석하는 능력을 기릅니다.',
     coreConcepts: ['순열과 조합', '조건부확률과 독립', '이항분포와 정규분포', '모평균의 추정과 신뢰구간'],
-    prerequisites: ['s_math_com'],
+    prerequisites: ['s_math_com1', 's_math_com2'],
     followUpSubjects: ['s_math_stat_app', 's_math_ai'],
     relatedFields: ['경영·경제', '사회과학', '의약', '자연', '인공지능', '생명과학'],
     evaluationType: '석차등급+성취도',
@@ -197,7 +225,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '이차곡선, 평면벡터, 공간도형과 공간좌표를 다루며 2D/3D 공간 구조를 대수적·기하학적으로 해석합니다.',
     coreConcepts: ['포물선·타원·쌍곡선', '벡터의 연산과 내적', '삼수선의 정리와 정사영', '공간좌표와 구의 방정식'],
-    prerequisites: ['s_math_com', 's_math_alg'],
+    prerequisites: ['s_math_com1', 's_math_com2', 's_math_alg'],
     relatedFields: ['기계공학', '항공우주', '로봇공학', '건축·토목', '컴퓨터그래픽스', '물리학'],
     evaluationType: '석차등급+성취도',
     studyTips: '공간도형을 3D 시각화 소프트웨어(GeoGebra)로 구현해보고 물리/공학의 힘 벡터 합성 및 궤도 방정식과 연계하세요.'
@@ -223,7 +251,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '수와 경제생활, 수열과 금융, 함수와 경제, 미분과 경제를 다루며 경제 현상을 수학적으로 모델링합니다.',
     coreConcepts: ['환율과 세금', '단리와 복리', '연금의 현재가치', '수요·공급 곡선', '한계비용과 이윤 극대화'],
-    prerequisites: ['s_math_com', 's_math_alg'],
+    prerequisites: ['s_math_com1', 's_math_com2', 's_math_alg'],
     relatedFields: ['경영학', '경제학', '금융·보험', '회계학', '통계학'],
     evaluationType: '석차등급+성취도',
     studyTips: '복리 공식과 한계효용·한계비용 도함수를 활용하여 기업의 생산 최적화 시뮬레이션을 수행해보세요.'
@@ -236,7 +264,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '인공지능의 핵심 기반이 되는 행렬, 벡터, 경사하강법, 확률적 최적화의 수학적 원리를 탐구합니다.',
     coreConcepts: ['행렬과 이미지 데이터', '텍스트와 벡터', '손실함수와 경사하강법', '분류와 예측 확률'],
-    prerequisites: ['s_math_com', 's_math_alg'],
+    prerequisites: ['s_math_com1', 's_math_com2', 's_math_alg'],
     relatedFields: ['인공지능(AI)', '소프트웨어', '컴퓨터공학', '데이터사이언스', '로봇공학'],
     evaluationType: '석차등급+성취도',
     studyTips: '간단한 파이썬 코드나 엑셀을 이용해 인공신경망의 가중치 업데이트(경사하강법) 과정을 직접 구현해보세요.'
@@ -294,17 +322,31 @@ export const SUBJECTS_DATA: Subject[] = [
   // [3] 영어 교과군 (진로선택 및 융합선택 전과목 완벽 수록)
   // ==========================================
   {
-    id: 's_eng_com',
-    name: '공통영어 1·2',
+    id: 's_eng_com1',
+    name: '공통영어1',
     group: '영어',
     type: '공통과목',
-    credits: 8,
-    desc: '기초적인 영어 의사소통 역량을 배양하고 다양한 글로벌 주제의 텍스트를 읽고 이해하는 기초 공통 과목입니다.',
+    credits: 4,
+    desc: '듣기·말하기·읽기·쓰기 4대 영역의 균형 있는 발달과 일상 및 기초 학술 영역의 의사소통 역량을 기르는 1학년 1학기 공통 필수 과목입니다.',
     coreConcepts: ['영어 듣기/말하기', '구문 독해', '어휘 확장', '문화적 다양성 이해'],
-    followUpSubjects: ['s_eng_eng1', 's_eng_eng2', 's_eng_disc'],
-    relatedFields: ['인문', '사회', '국제', '공학', '자연', '의약'],
+    followUpSubjects: ['s_eng_com2', 's_eng_eng1', 's_eng_eng2'],
+    relatedFields: ['인문', '사회', '국제', '공학', '자연', '의약', '전 계열'],
     evaluationType: '석차등급+성취도',
-    studyTips: '기초 구문 분석과 필수 어휘 정리를 지속하며 다양한 분야의 영어 지문을 비판적으로 읽는 태도가 좋습니다.'
+    studyTips: '기초 구문 분석과 필수 어휘 정리를 지속하며 일상 및 다양한 주제의 영어 지문을 정확하게 읽는 연습을 하세요.'
+  },
+  {
+    id: 's_eng_com2',
+    name: '공통영어2',
+    group: '영어',
+    type: '공통과목',
+    credits: 4,
+    desc: '다양한 학술적 주제의 지문을 심층 독해하고 비판적 사고력과 논리적 영작문 역량을 심화하는 1학년 2학기 공통 필수 과목입니다.',
+    coreConcepts: ['학술적 독해', '논리적 영작문', '비판적 텍스트 분석', '글로벌 이슈 탐구'],
+    prerequisites: ['s_eng_com1'],
+    followUpSubjects: ['s_eng_eng1', 's_eng_eng2', 's_eng_read_write'],
+    relatedFields: ['인문', '사회', '상경', '국제', '이공', '의약', '전 계열'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '문장 간 논리 전개 방식과 주제문-뒷받침 문장 구조를 파악하며 아카데믹 영어 표현을 익히세요.'
   },
   {
     id: 's_eng_eng1',
@@ -314,7 +356,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '인문, 사회, 과학, 예술 등 다양한 학술적 제재를 다루며 영어 4대 영역의 심화 능력을 기릅니다.',
     coreConcepts: ['의사소통', '공감적 이해', '문화적 감수성', '자기주도적 참여', '문제 해결', '유창성'],
-    prerequisites: ['s_eng_com'],
+    prerequisites: ['s_eng_com1', 's_eng_com2'],
     followUpSubjects: ['s_eng_eng2', 's_eng_adv'],
     relatedFields: ['인문', '사회', '상경', '이공', '의약'],
     evaluationType: '석차등급+성취도',
@@ -341,7 +383,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '영어 읽기와 쓰기를 중점적으로 학습하여 일상생활 및 학술·직무 분야에서 필요한 심층 독해와 논리적 작문 역량을 기릅니다.',
     coreConcepts: ['지식과 정보 습득', '글의 내용 파악 및 추론', '글의 의미 구성', '자기주도적 작문 활동'],
-    prerequisites: ['s_eng_com'],
+    prerequisites: ['s_eng_com1', 's_eng_com2'],
     relatedFields: ['인문', '어문', '사회', '국제', '전 계열'],
     evaluationType: '석차등급+성취도',
     studyTips: '영문 학술 에세이 구조(서론-본론-결론)를 익히고 주제별 영문 칼럼 요약 및 찬반 에세이를 작성해보세요.'
@@ -451,28 +493,54 @@ export const SUBJECTS_DATA: Subject[] = [
   // [4] 사회 교과군 (역사/도덕 포함)
   // ==========================================
   {
-    id: 's_soc_com',
-    name: '통합사회 1·2',
+    id: 's_soc_com1',
+    name: '통합사회1',
     group: '사회',
     type: '공통과목',
-    credits: 8,
-    desc: '인간, 사회, 환경에 대한 통합적 시각을 형성하고 행복, 자연환경, 문화, 인권, 정의 등을 탐구합니다.',
-    coreConcepts: ['시간적·공간적·사회적·윤리적 관점', '행복과 인권', '시장경제와 금융', '정의와 복지', '세계화와 평화'],
+    credits: 4,
+    desc: '인간, 사회, 환경에 대한 통합적 시각을 형성하고 행복의 조건, 자연환경과 인간의 삶, 문화 다양성과 인권 확장을 탐구합니다.',
+    coreConcepts: ['시간적·공간적·사회적·윤리적 관점', '행복의 조건', '자연환경과 인간', '문화 다양성', '인권 보장과 헌법'],
     relatedFields: ['인문', '사회', '경영·경제', '법정', '교육', '공학'],
     evaluationType: '석차등급+성취도',
-    studyTips: '사회 현상을 다각도의 융합적 관점에서 바라보고 비판적 질문을 던지는 연습이 중요합니다.'
+    studyTips: '사회 현상을 다각도의 융합적 관점에서 바라보고 비판적 질문을 던지는 연습이 중요합니다. (1학년 1학기 필수)'
   },
   {
-    id: 's_his_com',
-    name: '한국사 1·2',
+    id: 's_soc_com2',
+    name: '통합사회2',
+    group: '사회',
+    type: '공통과목',
+    credits: 4,
+    desc: '시장경제와 금융 생활, 사회정의와 불평등, 세계화와 평화, 미래 사회의 지속 가능한 발전을 종합적으로 분석합니다.',
+    coreConcepts: ['시장경제와 금융', '정의와 복지', '공간 불평등', '세계화와 평화', '미래와 지속가능성'],
+    prerequisites: ['s_soc_com1'],
+    relatedFields: ['인문', '사회', '경영·경제', '법정', '교육', '공학'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '자본주의 시장 메커니즘과 복지 제도, 지속가능발전목표(SDGs)를 실생활 사례와 연계해 탐구하세요. (1학년 2학기 필수)'
+  },
+  {
+    id: 's_his_com1',
+    name: '한국사1',
     group: '한국사',
     type: '공통과목',
-    credits: 6,
-    desc: '우리 역사의 형성 발달 과정을 종합적으로 이해하고 역사적 사고력과 올바른 역사관을 정립합니다.',
-    coreConcepts: ['전근대사의 이해', '근대 국민국가 수립 운동', '일제 침략과 독립운동', '대한민국의 발전과 현대'],
+    credits: 3,
+    desc: '선사 시대부터 조선 후기까지 우리 역사의 발전 과정과 민족 문화의 형성을 체계적으로 이해하고 역사적 정체성을 확립합니다.',
+    coreConcepts: ['고대 사회의 형성', '고려의 발전과 다원성', '조선의 성립과 유교 통치 체제', '조선 후기 사회 변동'],
     relatedFields: ['인문', '사회', '교육', '공공'],
     evaluationType: '석차등급+성취도',
-    studyTips: '시대별 주요 사건의 인과관계를 흐름 중심으로 파악하고 사료 분석 능력을 길러야 합니다.'
+    studyTips: '왕조별 주요 제도와 문화유산의 특징을 시대 흐름과 인과관계 중심으로 파악하세요. (1학년 1학기 필수)'
+  },
+  {
+    id: 's_his_com2',
+    name: '한국사2',
+    group: '한국사',
+    type: '공통과목',
+    credits: 3,
+    desc: '개항기 근대 국민국가 수립 운동부터 일제 침략과 독립운동, 광복 후 대한민국의 발전과 현대사를 탐구합니다.',
+    coreConcepts: ['개항과 근대화 운동', '일제 강점과 민족 독립운동', '대한민국의 수립과 발전', '민주주의와 경제 성장, 평화 통일'],
+    prerequisites: ['s_his_com1'],
+    relatedFields: ['인문', '사회', '교육', '공공'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '근현대사 주요 사건의 연대기적 인과관계와 1차 사료 분석 능력을 기르는 것이 핵심입니다. (1학년 2학기 필수)'
   },
   {
     id: 's_soc_geo_cit',
@@ -707,28 +775,54 @@ export const SUBJECTS_DATA: Subject[] = [
   // [5] 과학 교과군
   // ==========================================
   {
-    id: 's_sci_com',
-    name: '통합과학 1·2',
+    id: 's_sci_com1',
+    name: '통합과학1',
     group: '과학',
     type: '공통과목',
-    credits: 8,
-    desc: '물질과 규칙성, 시스템과 상호작용, 변화와 다양성, 환경과 에너지 등 자연현상을 통합적으로 탐구합니다.',
-    coreConcepts: ['우주의 시작과 원소', '화학결합', '중력과 역학시스템', '생명시스템과 유전', '지구시스템', '신재생에너지'],
+    credits: 4,
+    desc: '우주의 시작과 원소의 생성, 물질의 규칙성과 화학결합, 역학적 시스템과 지구 시스템, 생명 시스템의 상호작용을 통합적으로 탐구합니다.',
+    coreConcepts: ['원소의 기원과 주기율표', '화학결합과 물질의 성질', '중력과 역학시스템', '생명시스템과 세포막', '지구시스템 상호작용'],
     relatedFields: ['공학', '자연', '의약', '농림수산', '융합'],
     evaluationType: '석차등급+성취도',
-    studyTips: '물·화·생·지의 기본 핵심 개념들이 유기적으로 연결되는 맥락을 이해하고 과학적 탐구 보고서를 작성해보세요.'
+    studyTips: '물·화·생·지의 기본 핵심 개념들이 유기적으로 연결되는 맥락을 이해하고 과학적 탐구 보고서를 작성해보세요. (1학년 1학기 필수)'
   },
   {
-    id: 's_sci_exp',
-    name: '과학탐구실험 1·2',
+    id: 's_sci_com2',
+    name: '통합과학2',
     group: '과학',
     type: '공통과목',
-    credits: 2,
-    desc: '체험과 실험 중심의 탐구 활동을 통해 과학적 문제해결력과 실험 설계 능력을 기르는 과목입니다.',
-    coreConcepts: ['가설 설정', '변인 통제', '실험 데이터 수집·분석', '결론 도출 및 오차 분석'],
+    credits: 4,
+    desc: '화학 변화(산화·환원, 산과 염기), 생물 다양성과 진화, 생태계와 환경, 발전과 신재생에너지 및 미래 과학기술을 심층 탐구합니다.',
+    coreConcepts: ['산화환원과 중화반응', '지질시대와 자연선택·진화', '생물 다양성과 보전', '전력 수송과 신재생에너지'],
+    prerequisites: ['s_sci_com1'],
+    relatedFields: ['공학', '자연', '의약', '농림수산', '융합'],
+    evaluationType: '석차등급+성취도',
+    studyTips: '환경과 에너지, 진화와 생태계 등 현대 과학기술의 발전과 미래 사회 연계성을 탐구하세요. (1학년 2학기 필수)'
+  },
+  {
+    id: 's_sci_exp1',
+    name: '과학탐구실험1',
+    group: '과학',
+    type: '공통과목',
+    credits: 1,
+    desc: '역학 및 물질 시스템과 관련된 실험 설계와 측정, 변인 통제 활동을 통해 기초 과학 탐구 능력을 기릅니다.',
+    coreConcepts: ['가설 설정', '변인 통제', '측정과 오차 분석', '기초 실험 기구 조작'],
     relatedFields: ['공학', '자연', '의약'],
     evaluationType: '성취도(A~E)만',
-    studyTips: '실험 설계 시 조작 변인과 통제 변인을 정확히 설정하고 탐구 결과를 그래프와 수치로 명확히 정리하세요.'
+    studyTips: '실험 설계 시 조작 변인과 통제 변인을 정확히 설정하고 탐구 결과를 표와 그래프로 명확히 정리하세요. (1학년 1학기)'
+  },
+  {
+    id: 's_sci_exp2',
+    name: '과학탐구실험2',
+    group: '과학',
+    type: '공통과목',
+    credits: 1,
+    desc: '생명, 지구환경 및 신재생에너지 탐구 프로젝트를 수행하며 협동적 문제해결력과 과학적 의사소통 역량을 기릅니다.',
+    coreConcepts: ['프로젝트 탐구', '데이터 분석과 시각화', '결론 도출', '과학적 글쓰기'],
+    prerequisites: ['s_sci_exp1'],
+    relatedFields: ['공학', '자연', '의약'],
+    evaluationType: '성취도(A~E)만',
+    studyTips: '모둠별 융합 탐구 프로젝트를 기획하고 실험 보고서를 논문 형식으로 작성해보세요. (1학년 2학기)'
   },
   {
     id: 's_sci_phy',
@@ -738,7 +832,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '역학과 에너지, 전자기와 양자, 물질과 에너지, 파동을 다루며 자연현상의 기본 법칙과 공학의 기초를 탐구합니다.',
     coreConcepts: ['운동과 에너지', '전자기 유도', '반도체', '빛과 물질의 이중성', '상대성이론'],
-    prerequisites: ['s_sci_com', 's_math_com'],
+    prerequisites: ['s_sci_com1', 's_sci_com2', 's_math_com1', 's_math_com2'],
     relatedFields: ['기계공학', '전자전기', '컴퓨터공학', '물리학', '건축토목', '항공우주'],
     evaluationType: '석차등급+성취도',
     studyTips: '공식 암기에 그치지 않고 물리적 상황을 자유물체도(Free Body Diagram)로 시각화하여 수식으로 표현하세요.'
@@ -751,7 +845,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '물질의 구조, 성질, 변화 및 에너지 출입을 탐구하며 신소재, 생명공학, 환경과학의 기초를 다집니다.',
     coreConcepts: ['몰(mole)', '분자의 구조', '화학 평형', '농도와 pH', '중화반응의 양적 관계'],
-    prerequisites: ['s_sci_com'],
+    prerequisites: ['s_sci_com1', 's_sci_com2'],
     relatedFields: ['화학공학', '신소재공학', '생명공학', '의예·약학', '환경공학'],
     evaluationType: '석차등급+성취도',
     studyTips: '화학 반응의 양적 관계 계산을 체계화하고 전자 배치와 오비탈 개념을 3차원 분자 구조와 연계하세요.'
@@ -764,7 +858,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '생명체의 특성, 항상성과 몸의 조절, 유전과 다양성, 생태계와 상호작용을 과학적으로 탐구합니다.',
     coreConcepts: ['세포', '물질대사', '생태계', '항상성', '면역 반응', '생식세포', '진화'],
-    prerequisites: ['s_sci_com'],
+    prerequisites: ['s_sci_com1', 's_sci_com2'],
     relatedFields: ['의예·치의예·한의예·약학', '생명공학', '바이오의약', '농생명', '식품영양'],
     evaluationType: '석차등급+성취도',
     studyTips: '항상성 유지 메커니즘을 흐름도로 정리하고 가계도 분석 및 유전 확률 계산 유형을 꼼꼼히 정리하세요.'
@@ -777,7 +871,7 @@ export const SUBJECTS_DATA: Subject[] = [
     credits: 4,
     desc: '지구 시스템의 상호작용, 대기와 해양의 순환, 한반도의 지질, 우주의 기원과 별의 진화를 탐구합니다.',
     coreConcepts: ['기후 시스템', '지질공원', '별', '자료 분석', '호기심과 추론', '과학적 유용성'],
-    prerequisites: ['s_sci_com'],
+    prerequisites: ['s_sci_com1', 's_sci_com2'],
     relatedFields: ['천문우주', '대기과학', '해양학', '지질학', '환경공학', '지리교육'],
     evaluationType: '석차등급+성취도',
     studyTips: 'H-R도를 통한 별의 진화 단계별 특징과 일기도·위성 영상 분석 기법을 실습해보세요.'
@@ -1142,16 +1236,29 @@ export const SUBJECTS_DATA: Subject[] = [
   // [8] 체육 / 예술 교과군
   // ==========================================
   {
-    id: 's_pe_pe1_2',
-    name: '체육 1·2',
+    id: 's_pe_pe1',
+    name: '체육1',
     group: '체육/예술',
     type: '일반선택',
     credits: 4,
-    desc: '건강 증진, 스포츠 활동 참여를 통해 체력을 기르고 스포츠맨십과 공동체 역량을 함양하는 기본 과목입니다.',
-    coreConcepts: ['건강 관리', '전략형 스포츠', '생태형 스포츠', '체력 증진'],
+    desc: '건강 관리, 신체활동의 기본 원리, 기초 체력 증진 및 네트형·표적형 스포츠 활동을 통해 신체적 자기관리와 팀워크를 함양합니다.',
+    coreConcepts: ['건강 관리와 체력 증진', '기초 신체활동 원리', '네트형·표적형 스포츠', '신체적 자기관리'],
     relatedFields: ['체육교육', '스포츠과학', '스포츠의학', '군사·경찰'],
     evaluationType: '성취도(3단계 P/F 등)',
-    studyTips: '자신의 체력 측정(PAPS) 결과를 분석하고 맞춤형 체력 증진 플랜을 세워 꾸준히 실천하세요.'
+    studyTips: '자신의 체력 측정(PAPS) 결과를 분석하고 맞춤형 체력 증진 플랜을 세워 꾸준히 실천하세요. (1·2학년 권장)'
+  },
+  {
+    id: 's_pe_pe2',
+    name: '체육2',
+    group: '체육/예술',
+    type: '일반선택',
+    credits: 4,
+    desc: '전략형·필드형 스포츠 경기 심화 수행, 평생 스포츠 계획 수립, 스포츠 윤리와 리더십 및 공동체 역량을 발전시킵니다.',
+    coreConcepts: ['전략형·필드형 스포츠', '스포츠 경기 분석과 전술', '평생 건강과 여가', '스포츠 윤리와 리더십'],
+    prerequisites: ['s_pe_pe1'],
+    relatedFields: ['체육교육', '스포츠과학', '스포츠의학', '군사·경찰'],
+    evaluationType: '성취도(3단계 P/F 등)',
+    studyTips: '경기 분석과 전술 수립, 스포츠 윤리와 페어플레이 정신을 종합적으로 탐구하세요. (1·2학년 권장)'
   },
   {
     id: 's_pe_exercise_health',

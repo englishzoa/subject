@@ -94,7 +94,7 @@ export const CareerNetApiConfig: React.FC<CareerNetApiConfigProps> = ({
             </label>
             <input
               type="text"
-              placeholder="예: a1b2c3d4e5f6g7h8..."
+              placeholder="예: dd2de89451af598c4b876f33a1de7138"
               value={inputKey}
               onChange={(e) => setInputKey(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-mono transition"

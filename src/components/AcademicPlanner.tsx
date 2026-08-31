@@ -47,11 +47,11 @@ export const AcademicPlanner: React.FC<AcademicPlannerProps> = ({
       targetMajor: initialMajorTarget || '컴퓨터·소프트웨어·인공지능학부',
       targetJob: 'AI 모델링 엔지니어',
       semesters: {
-        g1s1: ['s_kor_com', 's_math_com', 's_eng_com', 's_soc_com', 's_sci_com', 's_sci_exp', 's_his_com'],
-        g1s2: ['s_kor_com', 's_math_com', 's_eng_com', 's_soc_com', 's_sci_com', 's_sci_exp', 's_his_com'],
-        g2s1: ['s_kor_read', 's_math_alg', 's_eng_eng1', 's_sci_phy', 's_tech_info', 's_soc_culture'],
+        g1s1: ['s_kor_com1', 's_math_com1', 's_eng_com1', 's_soc_com1', 's_sci_com1', 's_sci_exp1', 's_his_com1'],
+        g1s2: ['s_kor_com2', 's_math_com2', 's_eng_com2', 's_soc_com2', 's_sci_com2', 's_sci_exp2', 's_his_com2'],
+        g2s1: ['s_kor_read', 's_math_alg', 's_eng_eng1', 's_sci_phy', 's_tech_info', 's_soc_world_geo'],
         g2s2: ['s_kor_speech', 's_math_calc1', 's_eng_eng2', 's_math_prob', 's_tech_ai_basic', 's_sci_chem'],
-        g3s1: ['s_math_calc2', 's_math_geo', 's_math_ai', 's_sci_phy_adv', 's_tech_robot'],
+        g3s1: ['s_math_calc2', 's_math_geo', 's_math_ai', 's_sci_em', 's_tech_robot'],
         g3s2: ['s_math_stat_app', 's_soc_problem', 's_sci_climate', 's_kor_lit']
       },
       selfReflection: '질문이 진로가 되는 탐구: 인공지능 윤리와 수학적 최적화 원리를 깊이 있게 학습하여 인간 중심의 AI 기술을 설계하고 싶습니다.',

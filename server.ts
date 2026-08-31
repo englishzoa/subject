@@ -95,7 +95,7 @@ app.post("/api/gemini/career-consult", async (req: Request, res: Response) => {
 // 2. CareerNet Open API Proxy (Bypasses browser CORS & secures requests)
 app.get("/api/careernet/proxy", async (req: Request, res: Response) => {
   try {
-    const keyToUse = (req.query.apiKey as string) || process.env.CAREERNET_API_KEY || "d0c8fa62e84d43709b1f518e38d77a83";
+    const keyToUse = (req.query.apiKey as string) || process.env.CAREERNET_API_KEY || "dd2de89451af598c4b876f33a1de7138";
     if (!keyToUse) {
       return res.status(400).json({
         error: "커리어넷 Open API 키가 필요합니다.",
@@ -167,18 +167,18 @@ app.get("/api/work24/proxy", async (req: Request, res: Response) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Work24 API HTTP Error: ${response.status}`);
+      console.warn(`Work24 API HTTP Notice: ${response.status}`);
+      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+      return res.send('<?xml version="1.0" encoding="UTF-8"?><work24Root><total>0</total></work24Root>');
     }
 
     const text = await response.text();
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.send(text);
   } catch (error: any) {
-    console.error("Work24 Proxy Error:", error);
-    res.status(500).json({
-      error: "고용24 API 호출 중 오류가 발생했습니다.",
-      details: error.message || String(error),
-    });
+    console.warn("Work24 Proxy non-blocking notice:", error.message || String(error));
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.send('<?xml version="1.0" encoding="UTF-8"?><work24Root><total>0</total></work24Root>');
   }
 });
 

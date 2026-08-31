@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Subject, SubjectGroup, SubjectType } from '../types';
 import { SUBJECTS_DATA } from '../data/curriculumData';
+import { getSubjectVideoInfo, TOGETHER_SCHOOL_DATA_ROOM_URL } from '../data/subjectVideosData';
 import { 
   Search, 
   Filter, 
@@ -23,7 +24,15 @@ import {
   ChevronRight,
   ShieldCheck,
   Award,
-  Calendar
+  Calendar,
+  Play,
+  PlayCircle,
+  Video,
+  Tv,
+  Clock,
+  UserCheck,
+  FileText,
+  Share2
 } from 'lucide-react';
 
 interface SubjectExplorerProps {
@@ -60,18 +69,19 @@ const HIERARCHY_DATA: SubjectHierarchyGroup[] = [
     desc: '수학적 사고력과 문제 해결력, 공학·자연·AI 분야 핵심 기초를 단계적으로 학습하는 위계 체계',
     iconName: 'math',
     common: [
-      { id: 's_math_com', name: '공통수학 1·2', type: '공통과목', credits: 8, gradeLevel: '1학년', desc: '다항식, 방정식과 부등식, 도형의 방정식, 집합과 명제, 함수', evalType: '5등급+성취도' }
+      { id: 's_math_com1', name: '공통수학1', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '다항식, 방정식과 부등식, 경우의 수, 행렬 (1학년 1학기 필수 이수)', evalType: '5등급+성취도' },
+      { id: 's_math_com2', name: '공통수학2', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '도형의 방정식, 집합과 명제, 함수와 그래프 (1학년 2학기 필수 이수)', evalType: '5등급+성취도', prereqNames: ['공통수학1'] }
     ],
     general: [
-      { id: 's_math_alg', name: '대수', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '지수와 로그, 지수·로그함수, 삼각함수, 수열', evalType: '5등급+성취도', prereqNames: ['공통수학 1·2'] },
+      { id: 's_math_alg', name: '대수', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '지수와 로그, 지수·로그함수, 삼각함수, 수열', evalType: '5등급+성취도', prereqNames: ['공통수학1', '공통수학2'] },
       { id: 's_math_calc1', name: '미적분Ⅰ', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '함수의 극한과 연속, 다항함수의 미분법과 적분법', evalType: '5등급+성취도', prereqNames: ['대수'] },
-      { id: 's_math_prob', name: '확률과 통계', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '경우의 수, 순열과 조합, 확률의 뜻과 활용, 통계적 추정', evalType: '5등급+성취도', prereqNames: ['공통수학 1·2'] }
+      { id: 's_math_prob', name: '확률과 통계', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '경우의 수, 순열과 조합, 확률의 뜻과 활용, 통계적 추정', evalType: '5등급+성취도', prereqNames: ['공통수학1', '공통수학2'] }
     ],
     career: [
       { id: 's_math_calc2', name: '미적분Ⅱ', type: '진로선택', credits: 4, gradeLevel: '3학년 심화', desc: '초월함수의 미분과 적분, 여러 가지 적분법 (자연·공학·의약 필수)', evalType: '5등급+성취도', prereqNames: ['미적분Ⅰ', '대수'] },
-      { id: 's_math_geo', name: '기하', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '이차곡선, 평면벡터, 공간도형과 공간좌표', evalType: '5등급+성취도', prereqNames: ['공통수학 1·2'] },
+      { id: 's_math_geo', name: '기하', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '이차곡선, 평면벡터, 공간도형과 공간좌표', evalType: '5등급+성취도', prereqNames: ['공통수학1', '공통수학2'] },
       { id: 's_math_eco', name: '경제 수학', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '이자, 환율, 연금, 세금, 미분과 경제 현상 분석 (상경계열 추천)', evalType: '5등급+성취도', prereqNames: ['대수'] },
-      { id: 's_math_ai', name: '인공지능 수학', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '벡터와 행렬, 텍스트 데이터의 수치화, 손실함수 최적화 (AI·SW 추천)', evalType: '5등급+성취도', prereqNames: ['공통수학 1·2'] }
+      { id: 's_math_ai', name: '인공지능 수학', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '벡터와 행렬, 텍스트 데이터의 수치화, 손실함수 최적화 (AI·SW 추천)', evalType: '5등급+성취도', prereqNames: ['공통수학1', '공통수학2'] }
     ],
     convergence: [
       { id: 's_math_stat', name: '실용 통계', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '공공 빅데이터 수집 및 통계 소프트웨어 활용 탐구', evalType: '성취도(A~E) 절대평가', prereqNames: ['확률과 통계'] },
@@ -80,18 +90,65 @@ const HIERARCHY_DATA: SubjectHierarchyGroup[] = [
     ]
   },
   {
+    groupName: '국어 교과군',
+    desc: '기초 의사소통 및 문해력에서 학술적 비판적 독해와 논리적 글쓰기, 전문 직무 의사소통으로 심화',
+    iconName: 'korean',
+    common: [
+      { id: 's_kor_com1', name: '공통국어1', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '듣기·말하기, 읽기, 쓰기 영역 기초 원리 및 창의적 사고력 (1학년 1학기 필수)', evalType: '5등급+성취도' },
+      { id: 's_kor_com2', name: '공통국어2', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '문법 체계의 탐구와 갈래별 문학의 비평적 수용·생산 (1학년 2학기 필수)', evalType: '5등급+성취도', prereqNames: ['공통국어1'] }
+    ],
+    general: [
+      { id: 's_kor_speech', name: '화법과 언어', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '담화 구성, 설득과 협상, 국어 문법 체계 탐구', evalType: '5등급+성취도', prereqNames: ['공통국어1', '공통국어2'] },
+      { id: 's_kor_read', name: '독서와 작문', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '학술적 비판적 독해, 논증 분석, 논리적 보고서 글쓰기', evalType: '5등급+성취도', prereqNames: ['공통국어1', '공통국어2'] },
+      { id: 's_kor_lit', name: '문학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '고전·현대 문학 감상, 서사 분석 및 창의적 비평', evalType: '5등급+성취도', prereqNames: ['공통국어1', '공통국어2'] }
+    ],
+    career: [
+      { id: 's_kor_theme', name: '주제 탐구 독서', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '희망 전공별 전문 학술 텍스트 심층 탐독 및 분석', evalType: '5등급+성취도', prereqNames: ['독서와 작문'] },
+      { id: 's_kor_media_lit', name: '문학과 영상', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '소설·희곡의 영상 각색, 미디어 스토리텔링 분석', evalType: '5등급+성취도', prereqNames: ['문학'] },
+      { id: 's_kor_job_comm', name: '직무 의사소통', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '비즈니스 공문서 작성, 기획서 프레젠테이션', evalType: '5등급+성취도' }
+    ],
+    convergence: [
+      { id: 's_kor_debate', name: '독서 토론과 글쓰기', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '쟁점 도서 중심 패널 토론 및 에세이 저작', evalType: '성취도(A~E) 절대평가' },
+      { id: 's_kor_media_comm', name: '매체 의사소통', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '디지털 미디어 리터러시, 콘텐츠 큐레이션 및 팩트체크', evalType: '성취도(A~E) 절대평가' }
+    ]
+  },
+  {
+    groupName: '영어 교과군',
+    desc: '기초 영어 의사소통 및 학술 텍스트 정독에서 글로벌 비즈니스 직무 영어와 미디어 융합으로 확장',
+    iconName: 'english',
+    common: [
+      { id: 's_eng_com1', name: '공통영어1', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '다양한 일상·학술 주제의 듣기, 말하기, 읽기, 쓰기 기초 (1학년 1학기 필수)', evalType: '5등급+성취도' },
+      { id: 's_eng_com2', name: '공통영어2', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '심화 어휘와 복합 구문을 통한 학술 영어 텍스트 독해 및 논리적 표현 (1학년 2학기 필수)', evalType: '5등급+성취도', prereqNames: ['공통영어1'] }
+    ],
+    general: [
+      { id: 's_eng_eng1', name: '영어Ⅰ', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '다양한 인문·사회·과학 텍스트의 심층 독해와 비판적 토론', evalType: '5등급+성취도', prereqNames: ['공통영어1', '공통영어2'] },
+      { id: 's_eng_eng2', name: '영어Ⅱ', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '고난도 학술 담화 분석과 논증적 에세이 작성', evalType: '5등급+성취도', prereqNames: ['영어Ⅰ'] },
+      { id: 's_eng_read_wrt', name: '영어 독해와 작문', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '원서 강독 및 논리적 아카데믹 라이팅 훈련', evalType: '5등급+성취도', prereqNames: ['공통영어1', '공통영어2'] }
+    ],
+    career: [
+      { id: 's_eng_job_eng', name: '직무 영어', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '비즈니스 이메일, 기술 영문 보고서, 국제회의 커뮤니케이션', evalType: '5등급+성취도' },
+      { id: 's_eng_pres', name: '영어 발표와 토론', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '글로벌 현안 프레젠테이션 및 영어 스피치 역량 배양', evalType: '5등급+성취도' }
+    ],
+    convergence: [
+      { id: 's_eng_cult', name: '영어권 문화', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '영미권 문화와 사회적 맥락, 세계 시민 소통 역량 함양', evalType: '성취도(A~E) 절대평가' },
+      { id: 's_eng_media', name: '미디어 영어', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '외신 뉴스, 테드(TED) 강연, 다큐멘터리 분석 융합 탐구', evalType: '성취도(A~E) 절대평가' }
+    ]
+  },
+  {
     groupName: '과학 교과군',
     desc: '기초 자연현상 탐구부터 분과별 심화 이론(물·화·생·지) 및 첨단 융합 과학 기술로 이어지는 위계 체계',
     iconName: 'science',
     common: [
-      { id: 's_sci_com', name: '통합과학 1·2', type: '공통과목', credits: 8, gradeLevel: '1학년', desc: '물질의 규칙성, 시스템과 상호작용, 변화와 다양성, 환경과 에너지', evalType: '5등급+성취도' },
-      { id: 's_sci_exp', name: '과학탐구실험 1·2', type: '공통과목', credits: 2, gradeLevel: '1학년', desc: '실험 설계, 관찰 및 측정, 데이터 분석 및 협동 탐구', evalType: '성취도(3단계 P/F)' }
+      { id: 's_sci_com1', name: '통합과학1', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '물질의 규칙성, 시스템과 상호작용, 역학 및 지구·생명 시스템 (1학년 1학기 필수)', evalType: '5등급+성취도' },
+      { id: 's_sci_com2', name: '통합과학2', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '화학 변화와 다양성, 생물 진화, 전력 수송과 신재생에너지 (1학년 2학기 필수)', evalType: '5등급+성취도', prereqNames: ['통합과학1'] },
+      { id: 's_sci_exp1', name: '과학탐구실험1', type: '공통과목', credits: 1, gradeLevel: '1학년', desc: '실험 설계, 관찰·측정 및 기초 탐구 실습 (1학년 1학기)', evalType: '성취도(A~E) 절대평가' },
+      { id: 's_sci_exp2', name: '과학탐구실험2', type: '공통과목', credits: 1, gradeLevel: '1학년', desc: '융합 탐구 프로젝트 및 과학 보고서 작성 (1학년 2학기)', evalType: '성취도(A~E) 절대평가' }
     ],
     general: [
-      { id: 's_sci_phy', name: '물리학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '역학과 에너지, 물질과 전자기장, 파동과 정보 통신', evalType: '5등급+성취도', prereqNames: ['통합과학'] },
-      { id: 's_sci_chem', name: '화학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '물질의 세 가지 상태, 원자 구조와 주기율, 화학 결합, 화학 반응', evalType: '5등급+성취도', prereqNames: ['통합과학'] },
-      { id: 's_sci_bio', name: '생명과학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '생명체의 특성, 항상성과 몸의 조절, 물질대사, 세포분열과 유전', evalType: '5등급+성취도', prereqNames: ['통합과학'] },
-      { id: 's_sci_earth', name: '지구과학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '고체 지구의 변화, 대기와 해양의 상호작용, 우주의 기원과 진화', evalType: '5등급+성취도', prereqNames: ['통합과학'] }
+      { id: 's_sci_phy', name: '물리학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '역학과 에너지, 물질과 전자기장, 파동과 정보 통신', evalType: '5등급+성취도', prereqNames: ['통합과학1', '통합과학2'] },
+      { id: 's_sci_chem', name: '화학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '물질의 세 가지 상태, 원자 구조와 주기율, 화학 결합, 화학 반응', evalType: '5등급+성취도', prereqNames: ['통합과학1', '통합과학2'] },
+      { id: 's_sci_bio', name: '생명과학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '생명체의 특성, 항상성과 몸의 조절, 물질대사, 세포분열과 유전', evalType: '5등급+성취도', prereqNames: ['통합과학1', '통합과학2'] },
+      { id: 's_sci_earth', name: '지구과학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '고체 지구의 변화, 대기와 해양의 상호작용, 우주의 기원과 진화', evalType: '5등급+성취도', prereqNames: ['통합과학1', '통합과학2'] }
     ],
     career: [
       { id: 's_sci_mech', name: '역학과 에너지', type: '진로선택', credits: 4, gradeLevel: '3학년 심화', desc: '뉴턴 역학 심화, 열역학 법칙, 시공간과 상대성 이론 (기계·항공·물리)', evalType: '5등급+성취도', prereqNames: ['물리학'] },
@@ -107,34 +164,14 @@ const HIERARCHY_DATA: SubjectHierarchyGroup[] = [
     ]
   },
   {
-    groupName: '국어 교과군',
-    desc: '기초 의사소통 및 문해력에서 학술적 비판적 독해와 논리적 글쓰기, 전문 직무 의사소통으로 심화',
-    iconName: 'korean',
-    common: [
-      { id: 's_kor_com', name: '공통국어 1·2', type: '공통과목', credits: 8, gradeLevel: '1학년', desc: '듣기·말하기, 읽기, 쓰기, 문법, 문학의 기초 소양', evalType: '5등급+성취도' }
-    ],
-    general: [
-      { id: 's_kor_speech', name: '화법과 언어', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '담화 구성, 설득과 협상, 국어 문법 체계 탐구', evalType: '5등급+성취도', prereqNames: ['공통국어 1·2'] },
-      { id: 's_kor_read', name: '독서와 작문', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '학술적 비판적 독해, 논증 분석, 논리적 보고서 글쓰기', evalType: '5등급+성취도', prereqNames: ['공통국어 1·2'] },
-      { id: 's_kor_lit', name: '문학', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '고전·현대 문학 감상, 서사 분석 및 창의적 비평', evalType: '5등급+성취도', prereqNames: ['공통국어 1·2'] }
-    ],
-    career: [
-      { id: 's_kor_theme', name: '주제 탐구 독서', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '희망 전공별 전문 학술 텍스트 심층 탐독 및 분석', evalType: '5등급+성취도', prereqNames: ['독서와 작문'] },
-      { id: 's_kor_media_lit', name: '문학과 영상', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '소설·희곡의 영상 각색, 미디어 스토리텔링 분석', evalType: '5등급+성취도', prereqNames: ['문학'] },
-      { id: 's_kor_job_comm', name: '직무 의사소통', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '비즈니스 공문서 작성, 기획서 프레젠테이션', evalType: '5등급+성취도' }
-    ],
-    convergence: [
-      { id: 's_kor_debate', name: '독서 토론과 글쓰기', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '쟁점 도서 중심 패널 토론 및 에세이 저작', evalType: '성취도(A~E) 절대평가' },
-      { id: 's_kor_media_comm', name: '매체 의사소통', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '디지털 미디어 리터러시, 콘텐츠 큐레이션 및 팩트체크', evalType: '성취도(A~E) 절대평가' }
-    ]
-  },
-  {
     groupName: '사회(역사/도덕) 교과군',
     desc: '통합사회와 한국사 기초를 토대로 인문·사회과학적 통찰과 글로벌 시민 역량을 기르는 체계',
     iconName: 'social',
     common: [
-      { id: 's_soc_com', name: '통합사회 1·2', type: '공통과목', credits: 8, gradeLevel: '1학년', desc: '인간·사회·환경·행복, 정의와 인권, 시장과 금융, 지속가능성', evalType: '5등급+성취도' },
-      { id: 's_his_com', name: '한국사 1·2', type: '공통과목', credits: 6, gradeLevel: '1학년', desc: '선사부터 현대까지 한국사의 핵심 흐름과 역사적 정체성', evalType: '5등급+성취도' }
+      { id: 's_soc_com1', name: '통합사회1', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '인간·사회·환경의 통합적 관점, 행복, 자연환경, 문화와 인권 (1학년 1학기 필수)', evalType: '5등급+성취도' },
+      { id: 's_soc_com2', name: '통합사회2', type: '공통과목', credits: 4, gradeLevel: '1학년', desc: '시장경제와 금융, 사회정의와 불평등, 세계화와 지속가능성 (1학년 2학기 필수)', evalType: '5등급+성취도', prereqNames: ['통합사회1'] },
+      { id: 's_his_com1', name: '한국사1', type: '공통과목', credits: 3, gradeLevel: '1학년', desc: '선사 시대부터 조선 후기까지 전근대 한국사의 흐름과 정체성 (1학년 1학기 필수)', evalType: '5등급+성취도' },
+      { id: 's_his_com2', name: '한국사2', type: '공통과목', credits: 3, gradeLevel: '1학년', desc: '개항기 근대화 운동부터 일제강점기 독립운동, 현대 대한민국 발전 (1학년 2학기 필수)', evalType: '5등급+성취도', prereqNames: ['한국사1'] }
     ],
     general: [
       { id: 's_soc_world_geo', name: '세계지리', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '지구적 기후·문화권, 자원 갈등과 글로벌 네트워크', evalType: '5등급+성취도' },
@@ -172,6 +209,29 @@ const HIERARCHY_DATA: SubjectHierarchyGroup[] = [
     convergence: [
       { id: 's_inf_sw_prj', name: '소프트웨어와 생활', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '사회 문제 해결형 앱·웹 프로토타입 소프트웨어 개발', evalType: '성취도(A~E) 절대평가', prereqNames: ['정보'] }
     ]
+  },
+  {
+    groupName: '체육·예술 교과군',
+    desc: '신체활동 기본 원리 및 체력 증진, 심화 스포츠 전술과 문화예술 감수성 및 창작 표현 이수 체계',
+    iconName: 'art',
+    common: [],
+    general: [
+      { id: 's_pe_pe1', name: '체육1', type: '일반선택', credits: 4, gradeLevel: '1학년', desc: '건강 관리, 신체활동 기본 원리, 기초 체력 증진 및 네트·표적형 스포츠', evalType: '성취도(3단계 P/F)' },
+      { id: 's_pe_pe2', name: '체육2', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '전략형·필드형 스포츠 경기 심화, 평생 스포츠 계획, 스포츠 윤리와 리더십', evalType: '성취도(3단계 P/F)', prereqNames: ['체육1'] },
+      { id: 's_art_music', name: '음악', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '음악적 감수성, 악곡 감상 및 가창·기악 표현', evalType: '성취도(3단계 P/F)' },
+      { id: 's_art_art', name: '미술', type: '일반선택', credits: 4, gradeLevel: '2~3학년', desc: '조형 요소와 원리, 시각 문화 수용 및 창의적 발상·표현', evalType: '성취도(3단계 P/F)' }
+    ],
+    career: [
+      { id: 's_pe_exercise_health', name: '운동과 건강', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '운동 생리학, 운동 처방, 재활 트레이닝 및 생애 건강 관리', evalType: '성취도(3단계 P/F)' },
+      { id: 's_pe_sports_culture', name: '스포츠 문화', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '스포츠 역사·철학, 미디어와 산업, 스포츠 윤리와 페어플레이', evalType: '성취도(3단계 P/F)' },
+      { id: 's_pe_sports_sci', name: '스포츠 과학', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '운동역학적 동작 분석, 스포츠 데이터 사이언스 및 생체역학', evalType: '성취도(3단계 P/F)', prereqNames: ['체육1'] },
+      { id: 's_art_music_creation', name: '음악 연주와 창작', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '전공 실기 연주 및 화성학 기초 창작 프로젝트', evalType: '성취도(3단계 P/F)' },
+      { id: 's_art_art_creation', name: '미술 창작', type: '진로선택', credits: 4, gradeLevel: '2~3학년', desc: '회화·조소·디자인 심화 실기 및 포트폴리오 제작', evalType: '성취도(3단계 P/F)' }
+    ],
+    convergence: [
+      { id: 's_art_music_media', name: '음악과 미디어', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '디지털 음원 제작(MIDI), 영화/게임 사운드 디자인', evalType: '성취도(A~E) 절대평가' },
+      { id: 's_art_art_media', name: '미술과 미디어', type: '융합선택', credits: 4, gradeLevel: '2~3학년', desc: '디지털 일러스트, 3D 그래픽 및 인터랙티브 미디어 아트', evalType: '성취도(A~E) 절대평가' }
+    ]
   }
 ];
 
@@ -186,6 +246,8 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
   const [selectedType, setSelectedType] = useState<string>('all');
   const [activeHierarchyGroup, setActiveHierarchyGroup] = useState<string>('수학 교과군');
   const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
+  const [activeVideoSubject, setActiveVideoSubject] = useState<Subject | null>(null);
+  const [selectedVideoChapter, setSelectedVideoChapter] = useState<number>(0);
   const [displayCount, setDisplayCount] = useState<number>(12);
 
   const groups: Array<{ id: string; label: string }> = [
@@ -492,10 +554,19 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                    <span className="text-[11px] truncate max-w-[170px]">
-                      연계: {subject.relatedFields.slice(0, 2).join(', ')}
-                    </span>
+                  <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveVideoSubject(subject);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-extrabold text-[11px] border border-rose-200 flex items-center space-x-1 transition shadow-xs"
+                      title="함께학교 과목소개 동영상 바로보기"
+                    >
+                      <Play className="w-3 h-3 fill-rose-600 text-rose-600" />
+                      <span>🎬 과목소개 영상</span>
+                    </button>
                     <span className="font-bold text-indigo-600 group-hover:translate-x-1 transition flex items-center">
                       상세보기 <ArrowRight className="w-3.5 h-3.5 ml-1" />
                     </span>
@@ -606,9 +677,23 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
                       </p>
                       <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] text-slate-500">
                         <span>평가: {node.evalType}</span>
-                        <span className="text-indigo-600 font-bold flex items-center">
-                          상세보기 <ArrowRight className="w-3 h-3 ml-0.5" />
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const targetSub = SUBJECTS_DATA.find(s => s.name === node.name || s.id === node.id);
+                              if (targetSub) setActiveVideoSubject(targetSub);
+                              else openSubjectModalByNameOrId(node.name);
+                            }}
+                            className="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold border border-rose-200 transition text-[9px]"
+                          >
+                            🎬 영상
+                          </button>
+                          <span className="text-indigo-600 font-bold flex items-center">
+                            상세 <ArrowRight className="w-3 h-3 ml-0.5" />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -851,7 +936,7 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
                     <td className="p-3.5 text-center">-</td>
                     <td className="p-3.5 text-center">3학점</td>
                     <td className="p-3.5 text-center font-bold text-amber-800">10학점</td>
-                    <td className="p-3.5 text-slate-500">체육 1·2, 운동과 건강, 스포츠 생활 등 매 학기 균형 편성</td>
+                    <td className="p-3.5 text-slate-500">체육1, 체육2, 운동과 건강, 스포츠 생활 등 매 학기 균형 편성</td>
                   </tr>
                   <tr className="bg-amber-50/30">
                     <td className="p-3.5 font-bold">예술</td>
@@ -1074,6 +1159,86 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
               </div>
             )}
 
+            {/* 🎬 TogetherSchool Official Subject Video Banner (진로학업설계 연계팁 하단 배치) */}
+            {(() => {
+              const videoInfo = getSubjectVideoInfo(activeSubject);
+              return (
+                <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 text-white border border-rose-500/30 shadow-lg relative overflow-hidden space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2.5 py-1 rounded-md text-[11px] font-black bg-rose-600 text-white flex items-center space-x-1 shadow-sm">
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>함께학교 공인 과목소개 영상</span>
+                      </span>
+                      <span className="text-xs text-rose-200 font-bold">
+                        {videoInfo.duration || '약 7분'}
+                      </span>
+                    </div>
+                    <a
+                      href={videoInfo.searchUrl || TOGETHER_SCHOOL_DATA_ROOM_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] text-indigo-300 hover:text-white flex items-center font-bold underline underline-offset-2 transition"
+                    >
+                      <span>함께학교 자료실 원문</span>
+                      <ExternalLink className="w-3 h-3 ml-1" />
+                    </a>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 pt-1">
+                    <div 
+                      onClick={() => {
+                        setActiveVideoSubject(activeSubject);
+                      }}
+                      className="w-full sm:w-44 h-28 bg-slate-800 rounded-xl border border-rose-400/40 relative flex items-center justify-center cursor-pointer group shrink-0 overflow-hidden shadow-inner"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-0"></div>
+                      <div className="relative z-10 flex flex-col items-center justify-center space-y-1">
+                        <div className="w-10 h-10 rounded-full bg-rose-600/90 group-hover:bg-rose-500 group-hover:scale-110 flex items-center justify-center text-white transition shadow-md">
+                          <Play className="w-5 h-5 fill-white ml-0.5" />
+                        </div>
+                        <span className="text-[10px] font-bold text-white/90">영상 바로보기</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 w-full">
+                      <div>
+                        <span className="text-[11px] text-slate-300 block">{videoInfo.lecturer}</span>
+                        <h4 className="text-sm font-extrabold text-white">
+                          {videoInfo.title}
+                        </h4>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                        {videoInfo.chapters?.slice(0, 4).map((ch, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => {
+                              setSelectedVideoChapter(idx);
+                              setActiveVideoSubject(activeSubject);
+                            }}
+                            className="flex items-center space-x-1.5 text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg border border-white/5 cursor-pointer transition"
+                          >
+                            <Clock className="w-3 h-3 text-rose-400 shrink-0" />
+                            <span className="font-mono text-rose-300 text-[10px] font-bold">{ch.time}</span>
+                            <span className="truncate text-[10px]">{ch.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveVideoSubject(activeSubject);
+                        }}
+                        className="w-full sm:w-auto px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs transition flex items-center justify-center space-x-1.5 shadow-md shadow-rose-600/30"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>과목소개 동영상 전체화면 시청</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Modal Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-100">
               <a
@@ -1108,6 +1273,293 @@ export const SubjectExplorer: React.FC<SubjectExplorerProps> = ({
           </div>
         </div>
       )}
+      {/* Full Subject Video Viewer Modal */}
+      {activeVideoSubject && (() => {
+        const videoInfo = getSubjectVideoInfo(activeVideoSubject);
+        const currentChapter = videoInfo.chapters?.[selectedVideoChapter] || {
+          time: '00:00',
+          title: '과목 개요 및 성격',
+          desc: `${activeVideoSubject.name} 과목의 성격과 핵심 학습 목표를 소개합니다.`
+        };
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
+            <div className="bg-slate-900 text-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border border-slate-700 shadow-2xl relative flex flex-col justify-between">
+              
+              {/* Modal Top Bar */}
+              <div className="p-5 sm:p-6 border-b border-slate-800 flex items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-black bg-rose-600 text-white flex items-center space-x-1 shadow-sm">
+                      <Play className="w-3 h-3 fill-white" />
+                      <span>함께학교 공인 과목소개 영상</span>
+                    </span>
+                    <span className="text-xs text-rose-300 font-bold bg-rose-950/80 border border-rose-800/60 px-2 py-0.5 rounded-md">
+                      {videoInfo.duration || '약 7분'}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {activeVideoSubject.group} 교과군 · {activeVideoSubject.type} ({activeVideoSubject.credits}학점)
+                    </span>
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-white">
+                    {videoInfo.title}
+                  </h2>
+                </div>
+
+                <button
+                  onClick={() => setActiveVideoSubject(null)}
+                  className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition shrink-0"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Main Content Body */}
+              <div className="p-5 sm:p-6 space-y-6">
+                
+                {/* 16:9 Video Presentation Frame */}
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl flex flex-col justify-between group">
+                  {/* Video Screen Backdrop with Subject Aesthetics */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-indigo-950/80 to-rose-950/40 z-0"></div>
+                  
+                  {/* Subtle Grid Ambient FX */}
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+
+                  {/* Video Top Overlay */}
+                  <div className="relative z-10 p-4 sm:p-5 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-lg bg-rose-600 flex items-center justify-center font-black text-xs text-white">
+                        함
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-300 block leading-tight">
+                          함께학교(togetherschool.go.kr) 상담자료실
+                        </span>
+                        <span className="text-xs font-extrabold text-white">
+                          2022 개정 교육과정 선택과목 가이드: {activeVideoSubject.name}
+                        </span>
+                      </div>
+                    </div>
+
+                    <a
+                      href={videoInfo.searchUrl || TOGETHER_SCHOOL_DATA_ROOM_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center space-x-1 border border-white/20"
+                    >
+                      <span>자료실 원문</span>
+                      <ExternalLink className="w-3 h-3 ml-1" />
+                    </a>
+                  </div>
+
+                  {/* Video Center Core Presentation */}
+                  <div className="relative z-10 px-6 py-4 flex flex-col items-center justify-center text-center space-y-3 my-auto">
+                    <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-xs font-bold animate-pulse">
+                      <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                      <span>현재 챕터: {currentChapter.time} {currentChapter.title}</span>
+                    </div>
+
+                    <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight max-w-xl">
+                      {activeVideoSubject.name}
+                    </h3>
+                    
+                    <p className="text-xs sm:text-sm text-slate-300 max-w-lg leading-relaxed bg-black/40 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                      {currentChapter.desc}
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      {activeVideoSubject.coreConcepts.slice(0, 4).map((concept, idx) => (
+                        <span key={idx} className="text-[11px] px-2.5 py-0.5 rounded-md bg-white/10 text-slate-200 font-medium">
+                          #{concept}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Video Bottom Playback Control Bar */}
+                  <div className="relative z-10 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent space-y-2">
+                    {/* Progress Bar / Scrubber */}
+                    <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative cursor-pointer">
+                      <div 
+                        className="bg-rose-500 h-full rounded-full transition-all duration-300 relative"
+                        style={{ 
+                          width: `${((selectedVideoChapter + 1) / (videoInfo.chapters?.length || 4)) * 100}%` 
+                        }}
+                      ></div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <div className="flex items-center space-x-3">
+                        <button 
+                          onClick={() => setSelectedVideoChapter((prev) => (prev > 0 ? prev - 1 : (videoInfo.chapters?.length || 4) - 1))}
+                          className="hover:text-white transition font-bold"
+                          title="이전 챕터"
+                        >
+                          ⏮ 이전
+                        </button>
+                        <button 
+                          onClick={() => setSelectedVideoChapter((prev) => (prev < (videoInfo.chapters?.length || 4) - 1 ? prev + 1 : 0))}
+                          className="hover:text-white transition font-bold"
+                          title="다음 챕터"
+                        >
+                          다음 ⏭
+                        </button>
+                        <span className="font-mono text-rose-400 font-bold">
+                          {currentChapter.time} / {videoInfo.duration || '07:30'}
+                        </span>
+                      </div>
+
+                      <div className="text-[11px] text-slate-400 font-medium truncate max-w-[200px]">
+                        강사: {videoInfo.lecturer}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Direct Link Banner to TogetherSchool Consulting Data Room */}
+                <div className="bg-gradient-to-r from-rose-950/80 to-slate-900 p-4 rounded-2xl border border-rose-800/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-xl bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
+                      <ExternalLink className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-white">
+                        함께학교 공식 상담자료실에서 원문 영상 및 상세 설명서 열기
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        {TOGETHER_SCHOOL_DATA_ROOM_URL}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href={videoInfo.searchUrl || TOGETHER_SCHOOL_DATA_ROOM_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs transition flex items-center justify-center space-x-1.5 shadow-md shadow-rose-600/30 shrink-0"
+                  >
+                    <span>함께학교 자료실 이동 ↗</span>
+                  </a>
+                </div>
+
+                {/* Interactive Chapters Navigation */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-extrabold text-white flex items-center space-x-2">
+                      <Clock className="w-4 h-4 text-rose-400" />
+                      <span>영상 챕터별 타임라인 및 학습 가이드 (클릭하여 해당 구간 탐색)</span>
+                    </h4>
+                    <span className="text-xs text-slate-400 font-mono">
+                      총 {videoInfo.chapters?.length || 4}개 구간
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {videoInfo.chapters?.map((ch, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedVideoChapter(idx)}
+                        className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-start space-x-3 ${
+                          selectedVideoChapter === idx
+                            ? 'bg-rose-950/60 border-rose-500 shadow-md shadow-rose-950/50'
+                            : 'bg-slate-800/60 border-slate-700/70 hover:bg-slate-800 hover:border-slate-600'
+                        }`}
+                      >
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold shrink-0 ${
+                          selectedVideoChapter === idx
+                            ? 'bg-rose-600 text-white'
+                            : 'bg-slate-700 text-slate-300'
+                        }`}>
+                          {ch.time}
+                        </span>
+                        <div className="space-y-1">
+                          <h5 className={`text-xs font-bold ${
+                            selectedVideoChapter === idx ? 'text-rose-200' : 'text-slate-200'
+                          }`}>
+                            {ch.title}
+                          </h5>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            {ch.desc}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Key Takeaways & 3-Line Summary */}
+                <div className="bg-slate-800/50 rounded-2xl p-4 sm:p-5 border border-slate-700/80 space-y-3">
+                  <h4 className="text-xs font-extrabold text-indigo-300 uppercase tracking-wider flex items-center space-x-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>과목소개 영상 핵심 요약 (3줄 서머리)</span>
+                  </h4>
+                  <ul className="space-y-2 text-xs text-slate-300 leading-relaxed">
+                    {videoInfo.keySummary?.map((summaryItem, sIdx) => (
+                      <li key={sIdx} className="flex items-start space-x-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{summaryItem}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Related Fields from this Subject */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-slate-400 block">이 과목과 연계되는 추천 대학 학과:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {activeVideoSubject.relatedFields.map((field, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setActiveVideoSubject(null);
+                          onNavigateToMajor?.(field);
+                        }}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600 hover:text-white border border-slate-700 text-slate-300 text-xs font-bold rounded-lg transition"
+                      >
+                        {field} ↗
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div className="p-5 sm:p-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-950/60 rounded-b-3xl">
+                <button
+                  onClick={() => {
+                    const sub = activeVideoSubject;
+                    setActiveVideoSubject(null);
+                    setActiveSubject(sub);
+                  }}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 font-bold text-xs transition"
+                >
+                  과목 상세정보 전체보기
+                </button>
+
+                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => setActiveVideoSubject(null)}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs transition"
+                  >
+                    닫기
+                  </button>
+                  {onSelectSubjectForPlan && (
+                    <button
+                      onClick={() => {
+                        onSelectSubjectForPlan(activeVideoSubject.id);
+                        setActiveVideoSubject(null);
+                      }}
+                      className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 flex items-center justify-center space-x-1 transition"
+                    >
+                      <PlusCircle className="w-4 h-4 mr-1" />
+                      <span>3개년 학업계획서에 담기</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

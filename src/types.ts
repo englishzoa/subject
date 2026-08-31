@@ -2,6 +2,17 @@ export type SubjectType = '공통과목' | '일반선택' | '진로선택' | '�
 
 export type SubjectGroup = '국어' | '수학' | '영어' | '한국사' | '사회' | '과학' | '기술·가정/정보' | '제2외국어/한문' | '체육/예술' | '교양';
 
+export interface SubjectVideoInfo {
+  title: string;
+  togetherSchoolUrl: string; // https://www.togetherschool.go.kr/consulting/consultingDataRoom?pstCatgryId=2
+  searchUrl?: string;
+  youtubeId?: string;
+  duration?: string;
+  lecturer?: string;
+  chapters?: { time: string; title: string; desc: string }[];
+  keySummary?: string[];
+}
+
 export interface Subject {
   id: string;
   name: string;
@@ -15,6 +26,7 @@ export interface Subject {
   relatedFields: string[]; // 관련 계열 (공학, 자연, 의약, 인문, 사회, 교육 등)
   evaluationType: '석차등급+성취도' | '성취도(A~E)만' | '성취도(3단계 P/F 등)';
   studyTips: string;
+  videoInfo?: SubjectVideoInfo;
 }
 
 export type DepartmentCategory = 
@@ -64,6 +76,7 @@ export interface Job {
   relatedDepartments: string[]; // 관련 학과 ID 또는 명칭
   relatedSubjects: string[]; // 추천 고교 과목
   educationLevel: string;
+  certifications?: string[];
 }
 
 export interface UniversityRequirement {

@@ -15,6 +15,7 @@ import { AcademicPlanner } from './components/AcademicPlanner';
 import { AiConsultant } from './components/AiConsultant';
 import { CareerNetTest } from './components/CareerNetTest';
 import { ApiSettingsModal } from './components/ApiSettingsModal';
+import { Admission2028View } from './components/Admission2028View';
 import { GraduationCap, Sparkles, BookOpen, Compass, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
@@ -25,36 +26,29 @@ export default function App() {
   const [aiStudentContext, setAiStudentContext] = useState<any>(null);
 
   // CareerNet & Work24 Open API key management (Provided by user)
+  const DEFAULT_CAREERNET_KEY = 'dd2de89451af598c4b876f33a1de7138';
   const DEFAULT_WORK24_JOB_KEY = '6e4fa144-d61e-45b5-9230-e558b8a02d65';
-  const DEFAULT_WORK24_MAJOR_KEY = '6b8960ad-4aa4-4754-8971-dc93c509ddbd';
 
   const [careernetKey, setCareernetKey] = useState<string>(() => {
-    return localStorage.getItem('careernet_api_key') || '';
+    return localStorage.getItem('careernet_api_key') || DEFAULT_CAREERNET_KEY;
   });
   const [work24JobKey, setWork24JobKey] = useState<string>(() => {
     return localStorage.getItem('work24_job_key') || DEFAULT_WORK24_JOB_KEY;
   });
-  const [work24MajorKey, setWork24MajorKey] = useState<string>(() => {
-    return localStorage.getItem('work24_major_key') || DEFAULT_WORK24_MAJOR_KEY;
-  });
   const [isApiModalOpen, setIsApiModalOpen] = useState<boolean>(false);
 
-  const handleSaveKeys = (cKey: string, wJobKey: string, wMajorKey: string) => {
+  const handleSaveKeys = (cKey: string, wJobKey: string) => {
     localStorage.setItem('careernet_api_key', cKey);
     localStorage.setItem('work24_job_key', wJobKey);
-    localStorage.setItem('work24_major_key', wMajorKey);
     setCareernetKey(cKey);
     setWork24JobKey(wJobKey);
-    setWork24MajorKey(wMajorKey);
   };
 
   const handleResetKeys = () => {
     localStorage.removeItem('careernet_api_key');
     localStorage.removeItem('work24_job_key');
-    localStorage.removeItem('work24_major_key');
-    setCareernetKey('');
+    setCareernetKey(DEFAULT_CAREERNET_KEY);
     setWork24JobKey(DEFAULT_WORK24_JOB_KEY);
-    setWork24MajorKey(DEFAULT_WORK24_MAJOR_KEY);
   };
 
   // Header quick search router
@@ -109,7 +103,6 @@ export default function App() {
         {activeTab === 'majors' && (
           <MajorExplorer
             careernetKey={careernetKey}
-            work24Key={work24MajorKey}
             onSelectMajorForPlan={handleSelectMajorForPlan}
             onNavigateToSubject={(subName) => {
               setSubjectSearchQuery(subName);
@@ -169,6 +162,11 @@ export default function App() {
           />
         )}
 
+        
+        {(activeTab === 'admission_2028' || activeTab === 'university_search') && (
+          <Admission2028View />
+        )}
+
         {activeTab === 'ai_consultant' && (
           <AiConsultant
             initialStudentContext={aiStudentContext}
@@ -199,7 +197,6 @@ export default function App() {
         onClose={() => setIsApiModalOpen(false)}
         careernetKey={careernetKey}
         work24JobKey={work24JobKey}
-        work24MajorKey={work24MajorKey}
         onSaveKeys={handleSaveKeys}
         onResetKeys={handleResetKeys}
       />
@@ -214,7 +211,7 @@ export default function App() {
               </div>
               <div>
                 <div className="text-sm font-extrabold text-slate-900">
-                  대구광역시교육청 진로·학업설계 백화점
+                  대구광역시교육청 진로·학업설계 플랫폼
                 </div>
                 <div className="text-xs text-slate-500">
                   질문이 진로가 되는 대구 진로교육 • 대구광역시교육청 중등교육과 장학사 박태영

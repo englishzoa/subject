@@ -27,7 +27,7 @@ export const ADDITIONAL_JOBS_DATA: Job[] = [
     educationLevel: '대학교 졸업'
   },
   {
-    id: 'job_blockchain_dev',
+    id: 'job_blockchain_contract_dev',
     name: '블록체인·스마트컨트랙트 개발자',
     category: 'IT·인공지능',
     desc: '탈중앙화 금융(DeFi), 토큰증권(STO), 분산원장 네트워크와 Solidity 기반 스마트 컨트랙트를 보안 결함 없이 설계·검증합니다.',
@@ -90,7 +90,7 @@ export const ADDITIONAL_JOBS_DATA: Job[] = [
   // [3] 바이오·의료 & 재활 헬스케어
   // ==========================================
   {
-    id: 'job_physical_therapist',
+    id: 'job_rehab_physical_therapist',
     name: '전문 물리치료사·재활운동 전문가',
     category: '의료·보건·약학',
     desc: '중추신경계 손상 환자나 척추·관절 통증 환자, 운동선수에게 맞춤 도수치료 및 재활 운동 프로그램을 적용하여 일상 복귀를 돕습니다.',

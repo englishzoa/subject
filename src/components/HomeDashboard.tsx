@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   Zap,
   Flame,
-  Info
+  Info,
+  Landmark
 } from 'lucide-react';
 import { DEPARTMENTS_DATA, SUBJECTS_DATA, JOBS_DATA, UNI_RECOMMENDATIONS } from '../data/curriculumData';
 
@@ -106,6 +107,18 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       stats: '192학점 실시간 검증',
     },
     {
+      id: 'admission_2028',
+      title: '2028 대입정보',
+      subtitle: '2028학년도 대학입학전형 개편안',
+      desc: '2028학년도 수능 및 내신 개편 방안, 수시/정시 주요 변경 사항 등을 확인하고 입시 전략을 세우세요.',
+      icon: Landmark,
+      badge: '대입 정보',
+      color: 'from-pink-600 to-red-700',
+      bgLight: 'bg-pink-50/70 border-pink-100 hover:border-pink-300',
+      iconColor: 'text-pink-600',
+      stats: '수능 및 내신 개편 안내',
+    },
+    {
       id: 'ai_consultant',
       title: 'AI 진로·학업 멘토',
       subtitle: 'Gemini AI 맞춤형 1:1 컨설팅',
@@ -176,7 +189,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight leading-tight text-white">
               대구광역시교육청{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-sky-200 to-indigo-100">
-                진로·학업설계 백화점
+                진로·학업설계 플랫폼
               </span>
             </h1>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
@@ -499,7 +512,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             대구광역시교육청 및 교육부 공식 진로 정보망
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <a
             href="https://www.career.go.kr"
             target="_blank"
@@ -507,6 +520,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             className="p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 transition flex items-center justify-between font-bold"
           >
             <span>커리어넷 (CareerNet)</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </a>
+          <a
+            href="https://www.hscredit.kr"
+            target="_blank"
+            rel="noreferrer"
+            className="p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 transition flex items-center justify-between font-bold"
+          >
+            <span>고교학점제 종합지원</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </a>
           <a
@@ -519,12 +541,21 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </a>
           <a
-            href="https://www.hscredit.kr"
+            href="https://www.ebsi.co.kr"
             target="_blank"
             rel="noreferrer"
             className="p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 transition flex items-center justify-between font-bold"
           >
-            <span>고교학점제 종합지원센터</span>
+            <span>EBSi 수능·입시포털</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+          </a>
+          <a
+            href="https://www.moe.go.kr"
+            target="_blank"
+            rel="noreferrer"
+            className="p-3 bg-white rounded-xl border border-slate-200 hover:border-indigo-400 hover:text-indigo-600 transition flex items-center justify-between font-bold"
+          >
+            <span>교육부 (MOE)</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </a>
           <a

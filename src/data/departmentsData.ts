@@ -64,7 +64,7 @@ const BASE_DEPARTMENTS_DATA: Department[] = [
     similarDepartments: ['한국사학과', '동양사학과', '서양사학과', '고고미술사학과', '역사문화학과', '역사교육과'],
     certifications: ['한국사능력검정시험(심화)', '학예사(준학예사/정학예사)', '문화재수리기술자', '관광통역안내사'],
     relatedJobs: ['학예연구사(큐레이터)', '역사교사', '문화재보존원', '역사작가', '기록물관리전문요원(아키비스트)', '언론인'],
-    relatedSubjectIds: ['s_his_com', 's_soc_world_hist', 's_soc_east_asia', 's_soc_modern_world', 's_lang_hanmun'],
+    relatedSubjectIds: ['s_his_com1', 's_his_com2', 's_soc_world_hist', 's_soc_east_asia', 's_soc_modern_world', 's_lang_hanmun'],
     topUniversities: ['서울대', '연세대', '고려대', '서강대', '성균관대', '중앙대', '경희대'],
     careerProspects: '국공립 박물관, 문화재청, 역사문화콘텐츠 기획사, 방송사 다큐멘터리 제작국, 학계 연구소 등으로 진출합니다.'
   },
@@ -311,16 +311,16 @@ const BASE_DEPARTMENTS_DATA: Department[] = [
     desc: '형법, 형사소송법, 범죄학, 경찰학, 무도 실기 등을 체계적으로 교육하여 법질서 확립과 사회 안전을 책임지는 정예 경찰을 양성합니다.',
     mainCurriculum: ['경찰학개론', '범죄학', '형법총론/각론', '형사소송법', '범죄심리학', '과학수사론', '경찰행정법', '체포술'],
     coreRecommendedSubjects: ['법과 사회', '정치'],
-    recommendedSubjects: ['체육 1·2', '운동과 건강', '인간과 심리', '현대사회와 윤리', '정보'],
+    recommendedSubjects: ['체육1', '체육2', '운동과 건강', '인간과 심리', '현대사회와 윤리', '정보'],
     highSchoolSubjects: {
-      general: ['법과 사회', '체육 1·2', '사회와 문화', '현대사회와 윤리'],
+      general: ['법과 사회', '체육1', '체육2', '사회와 문화', '현대사회와 윤리'],
       career: ['정치', '인간과 심리', '운동과 건강', '정보과학'],
       convergence: ['사회문제 탐구', '스포츠 생활', '소프트웨어와 생활']
     },
     similarDepartments: ['경찰학과', '자치경찰학과', '경찰경호학과', '해양경찰학과', '사이버보안경찰학과'],
     certifications: ['경찰간부후보생 시험', '순경 공채', '경비지도사', '신변보호사', '무도 단증'],
     relatedJobs: ['경찰관(경위/순경)', '해양경찰관', '국가정보원 요원', '범죄심리분석관(프로파일러)', '대통령경호처 요원', '기업 보안책임자'],
-    relatedSubjectIds: ['s_soc_law', 's_soc_politics', 's_pe_pe1_2', 's_pe_exercise_health', 's_gen_psychology'],
+    relatedSubjectIds: ['s_soc_law', 's_soc_politics', 's_pe_pe1', 's_pe_pe2', 's_pe_exercise_health', 's_gen_psychology'],
     topUniversities: ['경찰대학', '동국대', '경기대', '용인대', '계명대', '순천향대', '원광대'],
     careerProspects: '경찰청, 해양경찰청, 대통령경호처, 교정본부, 대기업 보안실, 사이버수사대 등으로 진출합니다.'
   },
@@ -496,7 +496,7 @@ const BASE_DEPARTMENTS_DATA: Department[] = [
     similarDepartments: ['교육대학교(전국 10개 교대)', '유아교육과', '특수교육과'],
     certifications: ['초등학교 2급 정교사 자격증'],
     relatedJobs: ['국·공립 및 사립 초등학교 교사', '교육전문직(장학사/장학관)', '아동학습교재 기획자', '교육청 연구원'],
-    relatedSubjectIds: ['s_gen_education', 's_tech_child_parent', 's_gen_psychology', 's_art_music', 's_art_art', 's_pe_pe1_2'],
+    relatedSubjectIds: ['s_gen_education', 's_tech_child_parent', 's_gen_psychology', 's_art_music', 's_art_art', 's_pe_pe1', 's_pe_pe2'],
     topUniversities: ['서울교대', '경인교대', '한국교원대(초등교육)', '이화여대(초등교육)', '공주교대', '부산교대', '대구교대'],
     careerProspects: '초등교원 임용시험 합격률이 매우 높으며 교장·교감, 교육부 및 교육청 장학관으로 성장합니다.'
   },
@@ -901,17 +901,17 @@ const BASE_DEPARTMENTS_DATA: Department[] = [
     summary: '운동역학, 운동생리학, 스포츠 심리학, 스포츠 마케팅, 재활 트레이닝 및 전문 경기 실기를 체계적으로 연구합니다.',
     desc: '엘리트 스포츠 지도자, 전문 체육교사, 프로구단 전력분석관, 스포츠 에이전트, 메디컬 피트니스 트레이너를 양성합니다.',
     mainCurriculum: ['운동생리학', '운동역학', '스포츠심리학', '스포츠사회학', '트레이닝방법론', '스포츠마케팅', '전공실기(구기/육상/수영)'],
-    coreRecommendedSubjects: ['체육 1·2', '운동과 건강', '스포츠 과학'],
+    coreRecommendedSubjects: ['체육1', '체육2', '운동과 건강', '스포츠 과학'],
     recommendedSubjects: ['생명과학', '스포츠 문화', '물리학', '확률과 통계', '교육의 이해'],
     highSchoolSubjects: {
-      general: ['체육 1·2', '생명과학', '물리학', '독서와 작문'],
+      general: ['체육1', '체육2', '생명과학', '물리학', '독서와 작문'],
       career: ['운동과 건강', '스포츠 과학', '스포츠 문화', '교육의 이해'],
       convergence: ['스포츠 생활', '실용 통계', '사회문제 탐구']
     },
     similarDepartments: ['체육교육과', '스포츠의학과', '스포츠산업학과', '생활체육학과', '경호보안학과'],
     certifications: ['전문/생활스포츠지도사 1·2급', '건강운동관리사(국가전문)', '선수트레이너(AT)', '중등정교사(체육)'],
     relatedJobs: ['체육교사', '프로스포츠 구단 AT(선수 트레이너)', '스포츠 데이터 분석관', '스포츠 에이전트', '국민체육진흥공단 연구원'],
-    relatedSubjectIds: ['s_pe_pe1_2', 's_pe_exercise_health', 's_pe_sports_sci', 's_sci_bio', 's_pe_sports_culture', 's_gen_education'],
+    relatedSubjectIds: ['s_pe_pe1', 's_pe_pe2', 's_pe_exercise_health', 's_pe_sports_sci', 's_sci_bio', 's_pe_sports_culture', 's_gen_education'],
     topUniversities: ['서울대', '한국체육대', '연세대', '고려대', '경희대', '한양대', '중앙대'],
     careerProspects: '국공립 중등체육교사, 프로야구/축구 구단 전력분석팀, 대한체육회, 선수촌 의무트레이닝센터에 진출합니다.'
   },

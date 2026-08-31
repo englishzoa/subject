@@ -762,8 +762,7 @@ const BASE_JOBS_DATA: Job[] = [
   }
 ];
 
-export const JOBS_DATA: Job[] = [
-  ...BASE_JOBS_DATA,
-  ...ADDITIONAL_JOBS_DATA
-];
+export const JOBS_DATA: Job[] = Array.from(
+  new Map([...BASE_JOBS_DATA, ...ADDITIONAL_JOBS_DATA].map((j) => [j.id, j])).values()
+);
 
