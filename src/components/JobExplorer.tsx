@@ -89,17 +89,17 @@ export const inferCurriculumAndDetailsForJob = (jobName: string, rawCategory: st
       : `${jobName}은(는) ${roleNature}를 수행하는 전문 현장 실무 직무로, 대입을 위한 고교 교과 이수나 대학 학위보다는 국가기술자격(기능사), 직업훈련 실습 및 현장 숙련도가 핵심인 직업입니다.`;
 
     return {
-      category: '생활돌봄·현장실무',
-      futureProspects: '수요 지속 (86/100 · 현장 숙련기술 및 생활밀착 서비스)',
+      category: '기능직',
+      futureProspects: '수요 지속 (88/100 · 현장 숙련기술 및 전문 기능 실무)',
       desc: generatedDesc,
       isNonDegree: true,
-      nonDegreeNotice: '본 직업은 대학교 학위 취득 및 고교 권장이수과목 이수 대상이 아닌 [국가 자격증(기능사) 취득 및 현장 직무훈련 중심] 직무입니다.',
+      nonDegreeNotice: '본 직업은 대학교 학위 취득 및 고교 권장이수과목 이수 대상이 아닌 [국가기술자격(기능사) 취득 및 현장 직무훈련 중심의 기능직] 직무입니다.',
       coreCompetencies: ['현장 실무 숙련도', '안전·품질 관리 의식', '성실성 및 책임감', '도구 및 장비 활용력'],
       relatedSubjects: [] as string[],
       relatedDepartments: [] as string[],
-      educationLevel: '학력 무관 (국가기술자격 및 직업훈련 이수 중심)',
+      educationLevel: '학력 무관 (국가기술자격 기능사 취득 및 직업훈련 이수 중심)',
       certifications: [specificCert, '산업안전보건교육 이수'],
-      careerTips: '대입을 위한 일반계 고교 교과목 이수보다는 폴리텍/직업전문학교 실무 훈련 및 국가공인 기능사 자격 취득을 추천합니다.',
+      careerTips: '대입을 위한 일반계 고교 교과목 이수보다는 폴리텍/특성화고/직업전문학교 실무 훈련 및 국가공인 기능사 자격 취득을 추천합니다.',
       isMatched: false
     };
   }
@@ -410,15 +410,15 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
     { id: '의료·보건·약학', label: '의료·보건·약학', count: JOBS_DATA.filter(j => j.category === '의료·보건·약학').length, keyword: '의사', icon: '🩺' },
     { id: '바이오·신약', label: '바이오·신약·생명공학', count: JOBS_DATA.filter(j => j.category === '바이오·신약').length, keyword: '바이오', icon: '🧬' },
     { id: '환경·에너지·신소재', label: '에너지·신소재·배터리', count: JOBS_DATA.filter(j => j.category === '환경·에너지·신소재').length, keyword: '배터리', icon: '🔋' },
-    { id: '농림·스마트팜·바이오자원', label: '스마트팜·농림생태', count: 0, keyword: '농업', icon: '🌱' },
+    { id: '농림·스마트팜·바이오자원', label: '스마트팜·농림생태', count: JOBS_DATA.filter(j => j.category === '농림·스마트팜·바이오자원').length, keyword: '농업', icon: '🌱' },
     { id: '경영·금융·컨설팅', label: '경영·금융·빅데이터', count: JOBS_DATA.filter(j => j.category === '경영·금융·컨설팅').length, keyword: '금융', icon: '📊' },
     { id: '법률·공공·외교', label: '법률·행정·외교·공공', count: JOBS_DATA.filter(j => j.category === '법률·공공·외교').length, keyword: '법률', icon: '⚖️' },
     { id: '교육·학술·연구', label: '교육·연구·상담·심리', count: JOBS_DATA.filter(j => j.category === '교육·학술·연구').length, keyword: '교육', icon: '🎓' },
     { id: '미디어·콘텐츠', label: '미디어·영상·콘텐츠', count: JOBS_DATA.filter(j => j.category === '미디어·콘텐츠').length, keyword: '미디어', icon: '🎬' },
     { id: '디자인·공간', label: '디자인·건축·UX', count: JOBS_DATA.filter(j => j.category === '디자인·공간').length, keyword: '디자인', icon: '🎨' },
-    { id: '외식·호텔·뷰티·서비스', label: '외식·호텔·뷰티·관광', count: 0, keyword: '조리', icon: '☕' },
-    { id: '생활돌봄·현장실무', label: '생활돌봄·시공수리·현장실무 (비학위)', count: 0, keyword: '도배', icon: '🤝' },
-    { id: '인문사회·지식서비스', label: '인문사회·지식서비스', count: 0, keyword: '서비스', icon: '📑' },
+    { id: '기능직', label: '기능직·현장기술 (비학위)', count: JOBS_DATA.filter(j => j.category === '기능직').length, keyword: '기능직', icon: '🛠️' },
+    { id: '외식·호텔·뷰티·서비스', label: '외식·호텔·뷰티·관광', count: JOBS_DATA.filter(j => j.category === '외식·호텔·뷰티·서비스').length, keyword: '조리', icon: '☕' },
+    { id: '인문사회·지식서비스', label: '인문사회·지식서비스', count: JOBS_DATA.filter(j => j.category === '인문사회·지식서비스').length, keyword: '서비스', icon: '📑' },
   ];
 
   // Dynamic categorization of loaded Live Results
@@ -703,7 +703,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
             </div>
           </button>
 
-          {/* Tab 2: CareerNet National Job Dictionary */}
+          {/* Tab 2: National Job Dictionary */}
           <button
             onClick={() => {
               setActiveTabMode('careernet');
@@ -720,13 +720,13 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
             <span className="text-xl">🌐</span>
             <div className="text-left">
               <div className="flex items-center space-x-2">
-                <span className="font-black text-slate-900 text-sm sm:text-base">커리어넷 국가표준 직업사전</span>
+                <span className="font-black text-slate-900 text-sm sm:text-base">국가표준 직업사전</span>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800">
-                  1,000+ 전체 탐색
+                  500+ 전체탐색
                 </span>
               </div>
               <div className="text-[11px] font-medium text-slate-500 hidden sm:block">
-                교육부·한국직업능력연구원 Open API 연계 실시간 검색
+                교육부 한국직업능력연구원 데이터
               </div>
             </div>
           </button>
@@ -771,7 +771,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                   }}
                   className="inline-flex items-center space-x-1.5 text-xs text-indigo-200 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/80 px-3 py-1.5 rounded-xl border border-indigo-400/40 transition cursor-pointer font-bold"
                 >
-                  <span>🌐 커리어넷 국가표준 전체 직업사전 검색 ↗</span>
+                  <span>🌐 국가표준 직업사전 500+ 전체탐색 ↗</span>
                 </button>
               </div>
 
@@ -831,7 +831,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-2">
               {jobCategories.map((cat) => {
                 const isSelected = selectedCategory === cat.id;
                 return (
@@ -842,16 +842,18 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                       setLocalDisplayCount(12);
                       setShowAllLocal(false);
                     }}
-                    className={`px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all flex items-center space-x-2 cursor-pointer ${
+                    className={`px-3 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-between space-x-1.5 cursor-pointer ${
                       isSelected
                         ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 scale-[1.02]'
                         : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80 shadow-2xs'
                     }`}
                   >
-                    <span className="text-sm">{cat.icon}</span>
-                    <span>{cat.label}</span>
+                    <div className="flex items-center space-x-1.5 min-w-0 truncate">
+                      <span className="text-sm shrink-0">{cat.icon}</span>
+                      <span className="truncate">{cat.label}</span>
+                    </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                      className={`px-1.5 py-0.5 rounded-full text-[11px] font-extrabold shrink-0 ${
                         isSelected
                           ? 'bg-white/20 text-white'
                           : 'bg-slate-100 text-slate-700'
@@ -905,7 +907,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 선택하신 조건에 일치하는 유망 직업이 없습니다.
               </p>
               <p className="text-xs text-slate-500">
-                검색어를 수정하시거나, 전국 1,000+개 직업사전이 수록된 '커리어넷 국가표준 직업사전' 탭에서 검색해 보세요.
+                검색어를 수정하시거나, '국가표준 직업사전 500+ 전체탐색' 탭에서 검색해 보세요.
               </p>
               <div className="flex items-center justify-center gap-3 pt-2">
                 <button
@@ -926,7 +928,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                   }}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold"
                 >
-                  커리어넷 1,000+ 사전에서 검색하기 ↗
+                  국가표준 직업사전 500+에서 검색하기 ↗
                 </button>
               </div>
             </div>
@@ -1113,10 +1115,10 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               </div>
               <div>
                 <h4 className="text-sm font-extrabold text-slate-900">
-                  더 많은 국가표준 직업(1,000+개)을 찾고 계신가요?
+                  더 많은 국가표준 직업(500+개)을 찾고 계신가요?
                 </h4>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  교육부 커리어넷 Open API 연계 직업사전 탭에서 대한민국 전체 직업과 현장 실무 직무까지 모두 검색할 수 있습니다.
+                  교육부 한국직업능력연구원 데이터 기반 국가표준 직업사전 탭에서 대한민국 전체 직업과 현장 실무 직무까지 모두 검색할 수 있습니다.
                 </p>
               </div>
             </div>
@@ -1129,7 +1131,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               }}
               className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs sm:text-sm font-extrabold transition shadow-md shadow-indigo-600/20 flex items-center space-x-2 shrink-0 cursor-pointer"
             >
-              <span>커리어넷 전체 직업사전 탐색하기</span>
+              <span>국가표준 직업사전 500+ 전체탐색 바로가기</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -1137,7 +1139,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 2: 커리어넷 국가표준 전체 직업사전 (1,000+개)                            */}
+      {/* VIEW 2: 국가표준 직업사전 500+ 전체탐색                                      */}
       {/* ========================================================================= */}
       {activeTabMode === 'careernet' && (
         <div className="space-y-6 animate-fadeIn">
@@ -1148,7 +1150,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
                   <Database className="w-3.5 h-3.5" />
-                  <span>교육부 커리어넷 Open API & 고용24 실시간 연계 DB</span>
+                  <span>교육부 한국직업능력연구원 데이터 (국가표준 직업사전)</span>
                 </div>
                 <button
                   onClick={() => setActiveTabMode('curated')}
@@ -1159,10 +1161,10 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               </div>
 
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                커리어넷 국가표준 전체 직업사전 통합 검색
+                국가표준 직업사전 500+ 전체탐색
               </h1>
               <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-                대한민국 모든 공인 직업 정보를 실시간으로 검색하고, 2022 개정 고교 권장과목·연계 학과 지능형 추론 정보 및 직업인 인터뷰를 확인하세요.
+                교육부 한국직업능력연구원 데이터를 기반으로 대한민국 공인 직업을 탐색하고, 2022 개정 고교 권장과목·연계 학과 지능형 추론 정보 및 직업인 인터뷰를 확인하세요.
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
@@ -1267,7 +1269,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-slate-700 flex items-center">
                   <Layers className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                  커리어넷 직업 계열·직군 분류 (클릭 시 해당 계열만 필터링)
+                  국가표준 직업 계열·직군 분류 (클릭 시 해당 계열만 필터링)
                 </span>
                 {liveCategoryFilter !== 'all' && (
                   <button
@@ -1279,19 +1281,22 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 )}
               </div>
 
-              <div className="flex items-center space-x-2 overflow-x-auto pb-1.5 scrollbar-thin">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-2">
                 {/* All tab */}
                 <button
                   onClick={() => setLiveCategoryFilter('all')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
+                  className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center justify-between space-x-1.5 cursor-pointer ${
                     liveCategoryFilter === 'all'
                       ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                       : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
                   }`}
                 >
-                  <span>🌟 전체</span>
+                  <div className="flex items-center space-x-1.5 min-w-0 truncate">
+                    <span className="shrink-0">🌟</span>
+                    <span className="truncate">전체</span>
+                  </div>
                   <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
                       liveCategoryFilter === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-700'
                     }`}
                   >
@@ -1310,7 +1315,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                       <button
                         key={cat.id}
                         onClick={() => setLiveCategoryFilter(isSelected ? 'all' : cat.id)}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
+                        className={`px-3 py-2 rounded-2xl text-xs font-bold transition-all flex items-center justify-between space-x-1.5 cursor-pointer ${
                           isSelected
                             ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
                             : count > 0
@@ -1318,10 +1323,12 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                             : 'bg-slate-50/70 text-slate-400 border border-slate-100'
                         }`}
                       >
-                        <span className="text-xs">{cat.icon}</span>
-                        <span>{cat.label}</span>
+                        <div className="flex items-center space-x-1.5 min-w-0 truncate">
+                          <span className="text-xs shrink-0">{cat.icon}</span>
+                          <span className="truncate">{cat.label}</span>
+                        </div>
                         <span
-                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
                             isSelected
                               ? 'bg-white/20 text-white'
                               : count > 0
@@ -1358,14 +1365,14 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                         {group.items.length}개 직업
                       </span>
                     </h4>
-                    <span className="text-xs text-slate-500 font-medium">커리어넷 실시간 분류</span>
+                    <span className="text-xs text-slate-500 font-medium">국가표준 직업 분류</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {group.items.map((item, idx) => {
                       const jobTitle = item.jobTitle;
                       const inferred = item.inferred;
-                      const interview = findCareerInterview(jobTitle);
+                      const interview = findCareerInterview(jobTitle, inferred.category, inferred.desc);
 
                       return (
                         <div
@@ -1380,7 +1387,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                                   ? 'bg-amber-50 text-amber-800 border border-amber-200' 
                                   : 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                               }`}>
-                                {inferred.isNonDegree ? '🤝 생활돌봄·자격실무' : inferred.category}
+                                {inferred.isNonDegree ? '🛠️ 기능직·현장기술' : inferred.category}
                               </span>
                               <div className="flex items-center space-x-1.5">
                                 {interview && (
@@ -1559,7 +1566,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                   {filteredLiveResults.map((item, idx) => {
                     const jobTitle = item.jobTitle;
                     const inferred = item.inferred;
-                    const interview = findCareerInterview(jobTitle);
+                    const interview = findCareerInterview(jobTitle, inferred.category, inferred.desc);
 
                     return (
                       <div
@@ -1574,7 +1581,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                                 ? 'bg-amber-50 text-amber-800 border border-amber-200' 
                                 : 'bg-emerald-50 text-emerald-800 border border-emerald-100'
                             }`}>
-                              {inferred.isNonDegree ? '🤝 생활돌봄·자격실무' : inferred.category}
+                              {inferred.isNonDegree ? '🛠️ 기능직·현장기술' : inferred.category}
                             </span>
                             <div className="flex items-center space-x-1.5">
                               {interview && (
@@ -1741,7 +1748,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
                 ) : (
                   <PlusCircle className="w-4 h-4 mr-2 text-emerald-400" />
                 )}
-                <span>커리어넷 직업 정보 100개 더 불러오기 (현재 {liveResults.length}개 로드됨)</span>
+                <span>국가표준 직업 정보 100개 더 불러오기 (현재 {liveResults.length}개 로드됨)</span>
               </button>
             </div>
           )}
@@ -1751,7 +1758,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
       
       {/* Local Job Detail Modal */}
       {activeJob && (() => {
-        const interview = findCareerInterview(activeJob.name);
+        const interview = findCareerInterview(activeJob.name, activeJob.category, activeJob.desc);
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
@@ -1911,7 +1918,7 @@ export const JobExplorer: React.FC<JobExplorerProps> = ({
           activeLiveJob.job_cate || activeLiveJob.job_cl || '', 
           activeLiveJob.summary || activeLiveJob.job_summary || activeLiveJob.jobDef || activeLiveJob.description || ''
         );
-        const interview = findCareerInterview(jobTitle);
+        const interview = findCareerInterview(jobTitle, inferred.category, inferred.desc);
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">

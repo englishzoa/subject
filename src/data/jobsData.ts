@@ -759,6 +759,106 @@ const BASE_JOBS_DATA: Job[] = [
     relatedDepartments: ['도시공학과', '건설환경공학과', '지리학과', '교통공학과'],
     relatedSubjects: ['세계시민과 지리', '확률과 통계', '기하', '정보', '사회문제 탐구', '환경'],
     educationLevel: '대학교 졸업 이상'
+  },
+
+  // =================================================================
+  // [12] 기능직 (대학 비진학·현장기술·국가기능자격 중심 직무)
+  // =================================================================
+  {
+    id: 'job_carpenter_craft',
+    name: '원목 가구 제작 및 목공 기능사',
+    category: '기능직',
+    desc: '원목 및 목재 가공 기계를 다루어 맞춤형 친환경 가구를 정밀 재단·조립하고 전통 짜맞춤 및 현대 목공예 가구를 제작·수리합니다.',
+    futureProspects: '보통',
+    coreCompetencies: ['목공 기계(테이블쏘·루터) 운용력', '도면 판독 및 3D 치수 계산', '전통 짜맞춤 및 마감 도장 술기', '산업안전 수칙 준수'],
+    relatedDepartments: ['가구인테리어디자인과 (전문대/직업훈련원)', '목공예과', '실내인테리어과'],
+    relatedSubjects: ['공예', '창의 공학 설계', '미술', '수학과 문화'],
+    educationLevel: '학력 무관 (가구제작기능사, 목공예기능사 등 국가자격 및 도제 훈련)',
+    certifications: ['가구제작기능사', '목공예기능사', '건축목공기능사']
+  },
+  {
+    id: 'job_welding_technician',
+    name: '특수용접 및 정밀 판금 기능사',
+    category: '기능직',
+    desc: '조선, 플랜트, 건설 구조물 및 정밀 기계 부품에 TIG(알곤), CO2, 레이저 특수 용접을 수행하고 비파괴검사 기준에 맞추어 접합합니다.',
+    futureProspects: '밝음',
+    coreCompetencies: ['TIG/CO2 특수 용접 기술', '기계 도면 및 기호 판독', '금속 열처리 및 변형 제어', '용접 결함 검사'],
+    relatedDepartments: ['신소재용접과 (폴리텍/전문대)', '특수용접과', '기계가공과'],
+    relatedSubjects: ['물리학', '물질과 에너지', '창의 공학 설계'],
+    educationLevel: '학력 무관 (용접기능사, 특수용접기능사 취득 및 현장 실무)',
+    certifications: ['용접기능사', '특수용접기능사', '비파괴검사기능사']
+  },
+  {
+    id: 'job_electrician_craft',
+    name: '전기 설비 시공 및 시설 관리 기능사',
+    category: '기능직',
+    desc: '건축물, 공장, 빌딩의 배선 공사, 수배전반 점검, 조명 및 동력 설비를 안전 기준에 맞추어 설치·보수하고 정전 및 누전을 예방합니다.',
+    futureProspects: '밝음',
+    coreCompetencies: ['전기 회로 도면 판독', '배선 및 계측기(멀티미터) 조작', '전기안전관리법규 준수', '수배전반 유지보수'],
+    relatedDepartments: ['전기제어과 (폴리텍/전문대)', '스마트전기과'],
+    relatedSubjects: ['물리학', '전자기와 양자', '기술·가정'],
+    educationLevel: '학력 무관 (전기기능사 취득 및 현장 경력)',
+    certifications: ['전기기능사', '전기산업기사', '소방설비기능사']
+  },
+  {
+    id: 'job_auto_maintenance_technician',
+    name: '자동차 정비 및 스마트 모빌리티 정비원',
+    category: '기능직',
+    desc: '내연기관 및 하이브리드·전기차의 엔진, 제동장치, 센서 진단기를 활용하여 차량 고장 원인을 분석하고 부품 교체 및 튜닝을 수행합니다.',
+    futureProspects: '보통',
+    coreCompetencies: ['OBD-II 전자진단 스캔 도구 활용', '엔진 및 섀시 분해·조립', '전기차 고전압 안전 조치', '휠 얼라인먼트 및 판금 도장'],
+    relatedDepartments: ['자동차정비과 (폴리텍/직업전문학교)', '스마트모빌리티정비과'],
+    relatedSubjects: ['물리학', '역학과 에너지', '정보'],
+    educationLevel: '학력 무관 (자동차정비기능사 취득 및 정비 실습)',
+    certifications: ['자동차정비기능사', '자동차차체수리기능사', '자동차보수도장기능사']
+  },
+  {
+    id: 'job_interior_tiler_wallpaper',
+    name: '인테리어 타일·도배·바닥재 시공 기술자',
+    category: '기능직',
+    desc: '아파트, 상가, 주택의 욕실·거실에 타일을 정밀 압착 시공하거나 친환경 벽지 도배 및 마루 바닥재를 마감재 오차 없이 평탄 시공합니다.',
+    futureProspects: '밝음',
+    coreCompetencies: ['레이저 수평기 및 레벨링 실무', '줄눈(메지) 및 몰탈 배합 술기', '바탕면 평탄화 및 칼질 숙련도', '고객 맞춤 공간 마감'],
+    relatedDepartments: ['건축인테리어실무과 (직업훈련원/인테리어학원)'],
+    relatedSubjects: ['미술', '수학과 문화', '공예'],
+    educationLevel: '학력 무관 (타일기능사, 도배기능사 및 현장 도제 사제 교육)',
+    certifications: ['타일기능사', '도배기능사', '방수기능사', '실내건축기능사']
+  },
+  {
+    id: 'job_plumber_hvac_technician',
+    name: '건축 배관 및 냉난방 설비 시공원',
+    category: '기능직',
+    desc: '주택 및 산업 플랜트의 급수·배수관, 보일러 난방 배관, 에어컨 냉매 배관을 설계 도면에 따라 연결·용접하고 누수를 검사·보수합니다.',
+    futureProspects: '밝음',
+    coreCompetencies: ['배관 나사 절삭 및 동관 용접', '수압 시험 및 누수 탐지', '냉난방 공조 사이클 이해', '도면 및 배관 경사각 계산'],
+    relatedDepartments: ['건축설비과 (폴리텍/전문대)', '냉동공조에너지과'],
+    relatedSubjects: ['물리학', '역학과 에너지', '기술·가정'],
+    educationLevel: '학력 무관 (배관기능사, 공조냉동기계기능사, 에너지관리기능사)',
+    certifications: ['배관기능사', '공조냉동기계기능사', '에너지관리기능사', '온수온돌기능사']
+  },
+  {
+    id: 'job_machining_cnc_operator',
+    name: 'CNC 밀링·선반 정밀가공 머시닝 조작원',
+    category: '기능직',
+    desc: '도면을 바탕으로 G코드 및 CAM 프로그램을 작성하여 CNC 선반과 머시닝센터(MCT)를 조작하고 마이크로미터 단위의 정밀 금속 부품을 가공합니다.',
+    futureProspects: '보통',
+    coreCompetencies: ['G코드 수기 작성 및 CAM 운용', '버니어캘리퍼스·마이크로미터 정밀 측정', '공구(엔드밀·바이트) 세팅', '절삭유 및 칩 관리'],
+    relatedDepartments: ['컴퓨터응용기계과 (폴리텍/특성화고)', '기계금형과'],
+    relatedSubjects: ['물리학', '기하', '정보'],
+    educationLevel: '학력 무관 (컴퓨터응용선반기능사, 컴퓨터응용밀링기능사)',
+    certifications: ['컴퓨터응용선반기능사', '컴퓨터응용밀링기능사', '기계가공조립기능사']
+  },
+  {
+    id: 'job_shoe_leather_artisan',
+    name: '수제화 제작 및 가죽 수선 기술 장인',
+    category: '기능직',
+    desc: '고객의 족형을 측정하여 맞춤형 라스트(구두골)를 깎고 천연 가죽을 재단·갑피 봉제 및 저부 접착하여 고급 수제화를 제작·수선합니다.',
+    futureProspects: '보통',
+    coreCompetencies: ['족형 측정 및 패턴 제도', '가죽 피혁 선별 및 칼재단', '갑피 재봉 및 웰트 제화 공법', '밑창 굽 수선 및 가죽 복원'],
+    relatedDepartments: ['제화기술아카데미', '가죽공예전문과정'],
+    relatedSubjects: ['공예', '미술', '수학과 문화'],
+    educationLevel: '학력 무관 (제화기능사 또는 장인 문하 도제 실무)',
+    certifications: ['제화기능사', '가죽공예자격증']
   }
 ];
 

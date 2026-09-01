@@ -2,7 +2,7 @@ import React from 'react';
 import { CareerInterviewItem } from '../data/careerInterviewsData';
 import { 
   Quote, Sparkles, BookOpen, Award, CheckCircle2, 
-  ExternalLink, Heart, Compass, GraduationCap, Building2, User
+  ExternalLink, Heart, Compass, GraduationCap, Building2, User, Play, Video
 } from 'lucide-react';
 
 interface CareerInterviewModalProps {
@@ -28,7 +28,7 @@ export const CareerInterviewModal: React.FC<CareerInterviewModalProps> = ({
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-xl text-xs font-black bg-amber-50 text-amber-900 border border-amber-200/80 flex items-center">
-                <span className="mr-1">🎤</span> 커리어넷 공식 직업인 인터뷰
+                <span className="mr-1">🎤</span> 커리어넷 공식 직업인 인터뷰 & 영상
               </span>
               <span className="px-2.5 py-1 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
                 {interview.category}
@@ -52,6 +52,40 @@ export const CareerInterviewModal: React.FC<CareerInterviewModalProps> = ({
           >
             ✕
           </button>
+        </div>
+
+        {/* Video Interview Watch Card */}
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl text-white shadow-md relative overflow-hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1 z-10">
+            <div className="flex items-center space-x-2">
+              <span className="px-2.5 py-0.5 bg-rose-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                커리어넷 공식 영상
+              </span>
+              {interview.videoDuration && (
+                <span className="text-xs font-bold text-slate-300">
+                  ⏱ 러닝타임 {interview.videoDuration}
+                </span>
+              )}
+            </div>
+            <h3 className="text-base font-extrabold text-white pt-1">
+              {interview.videoHighlight || `${interview.jobName} 현직 멘토의 하루와 실무 인터뷰`}
+            </h3>
+            <p className="text-xs text-slate-300 font-medium">
+              한국직업능력연구원(커리어넷) 직업인 인터뷰 영상관에서 고화질 풀영상으로 시청하실 수 있습니다.
+            </p>
+          </div>
+
+          <a
+            href={interview.careerNetUrl || "https://www.career.go.kr/cloud/w/interview/job?listType=2"}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-2xl text-xs font-black shadow-lg shadow-indigo-500/30 transition transform active:scale-95 z-10"
+          >
+            <Play className="w-4 h-4 fill-white" />
+            <span>커리어넷 영상 시청하기</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+          </a>
         </div>
 
         {/* Mentor Quote Card */}
